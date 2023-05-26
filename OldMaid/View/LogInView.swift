@@ -9,7 +9,8 @@ import SwiftUI
 
 struct LogInView: View {
     @State var isLogIn = false
-    @AppStorage("userID") var userID = ""
+    @AppStorage("playerID") var playerID = "null"
+
     var body: some View {
         NavigationView{
             GeometryReader{ geometry in
@@ -34,26 +35,29 @@ struct LogInView: View {
                             //                        }
                             //                        Spacer()
                             NavigationView{
-                                HStack{
-                                    Spacer()
-                                    NavigationLink(destination: SignUpView(isLogIn: $isLogIn)){
-                                        Text("Sign Up")
-                                            .font(.system(size: 20))
-                                            .foregroundColor(.white)
-                                            .padding()
-                                            .background(Color.blue)
-                                            .cornerRadius(10)
+                                VStack{
+                                    HStack{
+                                        Spacer()
+                                        NavigationLink(destination: SignUpView(isLogIn: $isLogIn)){
+                                            Text("Sign Up")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(.white)
+                                                .padding()
+                                                .background(Color.blue)
+                                                .cornerRadius(10)
+                                        }
+                                        Spacer()
+                                        NavigationLink(destination: LogInFormView(isLogIn: $isLogIn)){
+                                            Text("Log In")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(.white)
+                                                .padding()
+                                                .background(Color.blue)
+                                                .cornerRadius(10)
+                                        }
+                                        Spacer()
                                     }
-                                    Spacer()
-                                    NavigationLink(destination: LogInFormView(isLogIn: $isLogIn)){
-                                        Text("Log In")
-                                            .font(.system(size: 20))
-                                            .foregroundColor(.white)
-                                            .padding()
-                                            .background(Color.blue)
-                                            .cornerRadius(10)
-                                    }
-                                    Spacer()
+                                    Text(playerID)
                                 }
                             }
                             //                        Spacer()
@@ -64,11 +68,22 @@ struct LogInView: View {
                     }
                     .background(
                         
-                        NavigationLink(destination: LobbyView(), isActive: $isLogIn) { EmptyView() }
+                        NavigationLink(destination: LobbyView(isLogIn : $isLogIn), isActive: $isLogIn) { EmptyView() }
                         
                     )
                 }
             }
+        }
+        .onAppear{
+            if playerID != "null"{
+                print("playerID: \(playerID)")
+                isLogIn = true
+            }
+            else{
+                isLogIn = false
+                print("not login")
+            }
+        
         }
     }
 }
@@ -82,8 +97,8 @@ struct SignUpView : View{
     @State var showAlert = false
     @State var alertMessage = ""
     @Binding var isLogIn: Bool
-    @AppStorage("userID") var userID = ""
-    
+    @AppStorage("playerID") var playerID = "null"
+
     
     @Environment(\.presentationMode) var presentationMode
     var body: some View{
@@ -123,8 +138,8 @@ struct SignUpView : View{
                                         viewModel.setUserInfo(userName: userName, userImage: userImage)
                                         presentationMode.wrappedValue.dismiss()
                                         isLogIn = true
-                                        print("Sign Up Success")
-                                        userID = viewModel.user!.playerID
+                                        print("Sign Up Success \(playerID)")
+                                        playerID = viewModel.user!.playerID
                                     }else{
                                         alertMessage = "Sign Up Failed"
                                         showAlert = true
@@ -159,8 +174,8 @@ struct LogInFormView : View{
     @State var showAlert = false
     @State var alertMessage = ""
     @Binding var isLogIn: Bool
-    @AppStorage("userID") var userID = ""
-    
+    @AppStorage("playerID") var playerID = "null"
+
     
     
     @Environment(\.presentationMode) var presentationMode
@@ -189,8 +204,8 @@ struct LogInFormView : View{
                                     if result{
                                         presentationMode.wrappedValue.dismiss()
                                         isLogIn = true
-                                        userID = viewModel.user!.playerID
-                                        print("Log in Success")
+                                        playerID = viewModel.user!.playerID
+                                        print("Log in Success \(playerID)")
                                     }else{
                                         alertMessage = "Log In Failed"
                                         showAlert = true

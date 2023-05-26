@@ -6,11 +6,16 @@
 //
 
 import SwiftUI
+import Firebase
 
 struct LobbyView: View {
-    init(){
-
+    @AppStorage("playerID") var playerID = "null"
+    @State var player : Player = Player()
+    @Binding var isLogIn : Bool
+    init(isLogIn : Binding<Bool>){
+        _isLogIn = isLogIn
     }
+
     var body: some View {
         NavigationView{
             GeometryReader{ geometry in
@@ -23,8 +28,24 @@ struct LobbyView: View {
                     .zIndex(4)
                     Group{
                         VStack{
-                            Button("Joint room"){
+                            Button("Join room random"){
+                                print(playerID, player.playerID)
+                                joinRoomRandom(player: player)
+                            }
+                            Button("Joint room for room number"){
                                 
+                            }
+                            Button("Create Room"){
+                                
+                            }
+                            Button("Log Out"){
+                                playerID = "null"
+                                isLogIn = false
+                                do {
+                                   try Auth.auth().signOut()
+                                } catch {
+                                   print(error)
+                                }
                             }
                         }
                     }
@@ -33,11 +54,11 @@ struct LobbyView: View {
             
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear{
+            self.player = Player(playerID : playerID)
+
+        }
     }
 }
 
-struct LobbyView_Previews: PreviewProvider {
-    static var previews: some View {
-        LobbyView()
-    }
-}
+

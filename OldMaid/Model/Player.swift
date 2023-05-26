@@ -16,6 +16,9 @@ class Player: ObservableObject, Codable {
     enum CodingKeys: String, CodingKey {
         case playerID, roomID, deckID, deck
     }
+    init() {
+        self.playerID = "null"
+    }
     
     init(playerID : String) {
         self.roomID = ""

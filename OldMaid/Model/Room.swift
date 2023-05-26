@@ -16,6 +16,7 @@ struct Room: Codable, Identifiable {
     @DocumentID var id: String?
     var deckID: String
     var roomID: String
+    var roomNumber: String
     var players: [String]
     var abandonCard: [Card] = []
 
@@ -23,14 +24,16 @@ struct Room: Codable, Identifiable {
         case id
         case deckID
         case roomID
+        case roomNumber
         case players
         case abandonCard
     }
 
-    init(id: String? = nil, deckID: String, roomID: String, players: [String], abandonCard: [Card] = []) {
+    init(id: String? = nil, deckID: String, roomID: String, roomNumber: String, players: [String], abandonCard: [Card] = []) {
         self.id = id
         self.deckID = deckID
         self.roomID = roomID
+        self.roomNumber = roomNumber
         self.players = players
         self.abandonCard = abandonCard
     }
@@ -40,6 +43,7 @@ struct Room: Codable, Identifiable {
         id = try container.decodeIfPresent(String.self, forKey: .id)
         deckID = try container.decode(String.self, forKey: .deckID)
         roomID = try container.decode(String.self, forKey: .roomID)
+        roomNumber = try container.decode(String.self, forKey: .roomNumber)
         players = try container.decode([String].self, forKey: .players)
         abandonCard = try container.decode([Card].self, forKey: .abandonCard)
     }
@@ -49,16 +53,66 @@ struct Room: Codable, Identifiable {
         try container.encodeIfPresent(id, forKey: .id)
         try container.encode(deckID, forKey: .deckID)
         try container.encode(roomID, forKey: .roomID)
+        try container.encode(roomNumber, forKey: .roomNumber)
         try container.encode(players, forKey: .players)
         try container.encode(abandonCard, forKey: .abandonCard)
     }
+}
+
+func getRoomNumber() -> String {
+    var roomNumber = ""
+    var isUnique = false
+    
+    while !isUnique {
+        // 生成五位随机数字
+        let randomNumber = String(format: "%05d", Int.random(in: 0..<100000))
+        roomNumber = randomNumber
+        
+        // 检查生成的房间号是否已存在
+        isUnique = isRoomNumberUnique(roomNumber: roomNumber)
+    }
+    
+    return roomNumber
+}
+
+func isRoomNumberUnique(roomNumber: String) -> Bool {
+    var isUnique = true
+    
+    // 查询数据库以检查房间号是否已存在
+    let query = db.collection("room").whereField("roomNumber", isEqualTo: roomNumber)
+    
+    query.getDocuments { (snapshot, error) in
+        if let error = error {
+            print("Error fetching documents: \(error)")
+            isUnique = false
+            return
+        }
+        
+        if let documents = snapshot?.documents {
+            if documents.isEmpty {
+                // 房间号不存在，唯一
+                isUnique = true
+            } else {
+                // 房间号已存在，不唯一
+                isUnique = false
+            }
+        }
+    }
+    
+    // 等待异步查询的结果
+    while isUnique == nil {
+        RunLoop.current.run(mode: .default, before: Date.distantFuture)
+    }
+    
+    return isUnique
 }
 
 func createRoom() -> String{
     let deckID : String = createDeck()
     let roomRef = db.collection("room").document()
     let roomID = roomRef.documentID
-    let room = Room(deckID: deckID, roomID: roomID, players: [])
+    var roomNumber = getRoomNumber()
+    let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [])
     print("==============" + roomID + "================")
     do{
         try roomRef.setData(from : room)
@@ -82,6 +136,50 @@ func joinRoom(player : Player, roomID : String){
         }
     }
 }
+func joinRoomWithRoomNumber(player: Player, roomNumber: String){
+    let query = db.collection("room").whereField("roomNumber", isEqualTo: roomNumber)
+    query.getDocuments { (snapshot, error) in
+        if let error = error {
+            print("Error fetching documents: \(error)")
+            return
+        }
+        
+        if let documents = snapshot?.documents {
+            if documents.isEmpty {
+                print("Room not found")
+                return
+            }
+            
+            let room = documents[0]
+            let roomID = room.documentID
+            joinRoom(player: player, roomID: roomID)
+        }
+    }
+}
+
+func joinRoomRandom(player: Player) {
+    db.collection("room").getDocuments { snapshot, error in
+                
+    guard let snapshot else { return }
+
+        let room = snapshot.documents.compactMap { snapshot in
+            try? snapshot.data(as: Room.self)
+        }
+        
+        while(true){
+            var randomRoom = room.randomElement()
+            print(randomRoom!.players.count, randomRoom!.roomID)
+            if(randomRoom!.players.count >= 8){
+                continue
+            }
+            joinRoom(player: player, roomID: randomRoom!.roomID)
+            break
+        }
+            
+            
+    }
+}
+
 func roomStart(roomID : String){
     let roomRef = db.collection("room").document(roomID)
     var roomDeck = ""
@@ -103,6 +201,7 @@ func roomStart(roomID : String){
                     print("Deal success for player: \(currentPlayer)")
                 } else {
                     print("Deal fail for player: \(currentPlayer)")
+                    return
                 }
                 
                 currentPlayerIndex += 1
@@ -173,46 +272,50 @@ func getRoomDeckID(roomID: String, completion: @escaping (String) -> Void) {
 //Test
 //----------------
 
-struct RoomTestView : View{
-    @State var roomID = createRoom()
-    var body : some View{
-        Button(action : {
-            print(roomID)
-        }){
-            Text("Create Room")
-        }
-        Button(action : {
-            let player = Player(playerID: "test1")
-            joinRoom(player: player, roomID: roomID)
-        }){
-            Text("Join Room")
-        }
-        Button(action : {
-            let player = Player(playerID: "test2")
-            joinRoom(player: player, roomID: roomID)
-        }){
-            Text("Join Room")
-        }
-        Button {
-            let player = Player(playerID: "test3")
-            joinRoom(player: player, roomID: roomID)
-        
-        } label: {
-            Text("Join Room")
-        }
-        Button {
-            let player = Player(playerID: "test4")
-            joinRoom(player: player, roomID: roomID)
-        
-        } label: {
-            Text("Join Room")
-        }
-        Button{
-            roomStart(roomID: roomID)
-        } label: {
-            Text("Start Game")
-        
-        }
-
-    }
-}
+//struct RoomTestView : View{
+//    @State var roomID = createRoom()
+//    @State var roomNumber = ""
+//    
+//    var body : some View{
+//        Button(action : {
+//            print(roomID)
+//            
+//        }){
+//            Text("Create Room")
+//        }
+//        TextField("Room Number", text: $roomNumber)
+//        Button(action : {
+//            let player = Player(playerID: "test1")
+//            joinRoomWithRoomNumber(player: player, roomNumber: roomNumber)
+//        }){
+//            Text("Join Room")
+//        }
+//        Button(action : {
+//            let player = Player(playerID: "test2")
+//            joinRoomRandom(player: player)
+//        }){
+//            Text("Join Room")
+//        }
+//        Button {
+//            let player = Player(playerID: "test3")
+//            joinRoom(player: player, roomID: roomID)
+//        
+//        } label: {
+//            Text("Join Room")
+//        }
+//        Button {
+//            let player = Player(playerID: "test4")
+//            joinRoom(player: player, roomID: roomID)
+//        
+//        } label: {
+//            Text("Join Room")
+//        }
+//        Button{
+//            roomStart(roomID: roomID)
+//        } label: {
+//            Text("Start Game")
+//        
+//        }
+//
+//    }
+//}
