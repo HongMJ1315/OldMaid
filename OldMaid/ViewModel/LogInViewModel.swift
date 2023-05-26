@@ -51,10 +51,11 @@ class LogInViewModel: ObservableObject{
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
             guard let userData = result?.user, error == nil else {
                 print(error?.localizedDescription)
+                completion(false)
                 return
             }
             self.user = Player(playerID: userData.uid)
-            print("success")
+            completion(true)
         }
     }
     
@@ -94,34 +95,34 @@ struct logInUITest : View{
             TextField("password", text: $password)
             Button("signUp"){
                 logInViewModel.signUp(email: email, password: password) { success in
-                    if success{
-                        print("success")
-                    }
+//                    if success{
+//                        print("success")
+//                    }
                 }
             }
             Button("logIn"){
                 logInViewModel.logIn(email: email, password: password) { success in
-                    if success{
-                        print("success")
-                    }
+//                    if success{
+//                        print("success")
+//                    }
                 }
             }
             Button("logOut"){
                 logInViewModel.logOut { success in
-                    if success{
-                        print("success")
-                    }
+//                    if success{
+//                        print("success")
+//                    }
                 }
             }
             Button("check"){
                 logInViewModel.checkLogInStatus { success in
-                    if success{
-                        print("success")
-                    }
-                    else{
-                        print("fail")
-                    
-                    }
+//                    if success{
+//                        print("success")
+//                    }
+//                    else{
+//                        print("fail")
+//                    
+//                    }
                 }
             
             }

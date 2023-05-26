@@ -25,6 +25,7 @@
 		C62A9DD82A20E8C500CE9206 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C62A9DD72A20E8C500CE9206 /* FirebaseAuth */; };
 		C62A9DDA2A20E8C500CE9206 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C62A9DD92A20E8C500CE9206 /* FirebaseFirestoreSwift */; };
 		C62A9DDC2A20E8C500CE9206 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = C62A9DDB2A20E8C500CE9206 /* FirebaseStorage */; };
+		C62A9DDE2A20EA8F00CE9206 /* LobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		C62A9DC52A20E4CF00CE9206 /* CardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
 		C62A9DC62A20E4CF00CE9206 /* LogInView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInView.swift; sourceTree = "<group>"; };
 		C62A9DC72A20E4CF00CE9206 /* MainView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,13 +82,13 @@
 			isa = PBXGroup;
 			children = (
 				C62A9DB92A20E4CF00CE9206 /* GoogleService-Info.plist */,
+				C62A9DAE2A20E49400CE9206 /* Assets.xcassets */,
 				C62A9DBF2A20E4CF00CE9206 /* Model */,
-				C62A9DBD2A20E4CF00CE9206 /* Preview Content */,
-				C62A9DC42A20E4CF00CE9206 /* View */,
 				C62A9DBA2A20E4CF00CE9206 /* ViewModel */,
+				C62A9DC42A20E4CF00CE9206 /* View */,
 				C62A9DAA2A20E49300CE9206 /* OldMaidApp.swift */,
 				C62A9DAC2A20E49300CE9206 /* ContentView.swift */,
-				C62A9DAE2A20E49400CE9206 /* Assets.xcassets */,
+				C62A9DBD2A20E4CF00CE9206 /* Preview Content */,
 				C62A9DB02A20E49400CE9206 /* Preview Content */,
 			);
 			path = OldMaid;
@@ -134,6 +136,7 @@
 				C62A9DC52A20E4CF00CE9206 /* CardView.swift */,
 				C62A9DC62A20E4CF00CE9206 /* LogInView.swift */,
 				C62A9DC72A20E4CF00CE9206 /* MainView.swift */,
+				C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -223,6 +226,7 @@
 				C62A9DCD2A20E4CF00CE9206 /* Card.swift in Sources */,
 				C62A9DCE2A20E4CF00CE9206 /* Room.swift in Sources */,
 				C62A9DCA2A20E4CF00CE9206 /* LogInViewModel.swift in Sources */,
+				C62A9DDE2A20EA8F00CE9206 /* LobbyView.swift in Sources */,
 				C62A9DD12A20E4CF00CE9206 /* CardView.swift in Sources */,
 				C62A9DCF2A20E4CF00CE9206 /* Deck.swift in Sources */,
 				C62A9DAD2A20E49300CE9206 /* ContentView.swift in Sources */,

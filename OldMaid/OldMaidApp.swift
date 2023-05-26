@@ -15,7 +15,7 @@ struct OldMaidApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            LogInView()
+            RoomTestView()
         
         }
     }

@@ -169,3 +169,50 @@ func getRoomDeckID(roomID: String, completion: @escaping (String) -> Void) {
     }
 }
 
+//-------------
+//Test
+//----------------
+
+struct RoomTestView : View{
+    @State var roomID = createRoom()
+    var body : some View{
+        Button(action : {
+            print(roomID)
+        }){
+            Text("Create Room")
+        }
+        Button(action : {
+            let player = Player(playerID: "test1")
+            joinRoom(player: player, roomID: roomID)
+        }){
+            Text("Join Room")
+        }
+        Button(action : {
+            let player = Player(playerID: "test2")
+            joinRoom(player: player, roomID: roomID)
+        }){
+            Text("Join Room")
+        }
+        Button {
+            let player = Player(playerID: "test3")
+            joinRoom(player: player, roomID: roomID)
+        
+        } label: {
+            Text("Join Room")
+        }
+        Button {
+            let player = Player(playerID: "test4")
+            joinRoom(player: player, roomID: roomID)
+        
+        } label: {
+            Text("Join Room")
+        }
+        Button{
+            roomStart(roomID: roomID)
+        } label: {
+            Text("Start Game")
+        
+        }
+
+    }
+}
