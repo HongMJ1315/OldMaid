@@ -18,7 +18,9 @@ struct Room: Codable, Identifiable {
     var roomID: String
     var roomNumber: String
     var players: [String]
+    var hostPlayerID : String
     var abandonCard: [Card] = []
+    var isStart: Bool
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -26,16 +28,22 @@ struct Room: Codable, Identifiable {
         case roomID
         case roomNumber
         case players
+        case hostPlayerID
         case abandonCard
+        case isStart
+    
     }
 
-    init(id: String? = nil, deckID: String, roomID: String, roomNumber: String, players: [String], abandonCard: [Card] = []) {
+    init(id: String? = nil, deckID: String, roomID: String, roomNumber: String, players: [String], hostPlayerID: String, abandonCard: [Card] = [], isStart: Bool) {
         self.id = id
         self.deckID = deckID
         self.roomID = roomID
         self.roomNumber = roomNumber
         self.players = players
+        self.hostPlayerID = hostPlayerID
         self.abandonCard = abandonCard
+        self.isStart = isStart
+    
     }
 
     init(from decoder: Decoder) throws {
@@ -45,7 +53,10 @@ struct Room: Codable, Identifiable {
         roomID = try container.decode(String.self, forKey: .roomID)
         roomNumber = try container.decode(String.self, forKey: .roomNumber)
         players = try container.decode([String].self, forKey: .players)
+        hostPlayerID = try container.decode(String.self, forKey: .hostPlayerID)
         abandonCard = try container.decode([Card].self, forKey: .abandonCard)
+        isStart = try container.decode(Bool.self, forKey: .isStart)
+    
     }
 
     func encode(to encoder: Encoder) throws {
@@ -55,7 +66,10 @@ struct Room: Codable, Identifiable {
         try container.encode(roomID, forKey: .roomID)
         try container.encode(roomNumber, forKey: .roomNumber)
         try container.encode(players, forKey: .players)
+        try container.encode(hostPlayerID, forKey: .hostPlayerID)
         try container.encode(abandonCard, forKey: .abandonCard)
+        try container.encode(isStart, forKey: .isStart)
+    
     }
 }
 
@@ -107,15 +121,16 @@ func isRoomNumberUnique(roomNumber: String) -> Bool {
     return isUnique
 }
 
-func createRoom() -> String{
+func createRoom(player : Player) -> String{
     let deckID : String = createDeck()
     let roomRef = db.collection("room").document()
     let roomID = roomRef.documentID
     var roomNumber = getRoomNumber()
-    let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [])
+    let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [], hostPlayerID: player.playerID, isStart: false)
     print("==============" + roomID + "================")
     do{
         try roomRef.setData(from : room)
+
     }catch{
         print(error)
     }
@@ -233,7 +248,8 @@ func roomStart(roomID : String){
         }
         
         dealNextPlayer() // 开始处理第一个玩家
-        
+        roomRef.updateData(["isStart" : true])
+    
     }
 }
 func dealToPlayer(playerID: String, deckID: String, completion: @escaping (Bool) -> Void) {

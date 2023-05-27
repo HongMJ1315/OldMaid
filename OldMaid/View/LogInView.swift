@@ -62,10 +62,11 @@ struct LogInView: View {
                             }
                             //                        Spacer()
                         }
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .opacity(geometry.size.width < geometry.size.height ? 0 : 1)
-                        .zIndex(3)
+                        
                     }
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .opacity(geometry.size.width < geometry.size.height ? 0 : 1)
+                    .zIndex(3)
                     .background(
                         
                         NavigationLink(destination: LobbyView(isLogIn : $isLogIn), isActive: $isLogIn) { EmptyView() }

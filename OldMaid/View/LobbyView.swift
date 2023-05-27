@@ -47,13 +47,15 @@ struct LobbyView: View {
                                 joinRoomRandom(player: player){ result in
                                     print("join room")
                                     isInRoom = true
-                                
-                                    
                                 }
                                 
                             }
                             Button("Create Room"){
-                                createRoom()
+                                joinRoom(player:player, roomID:createRoom(player:player)){
+                                    roomID = player.roomID
+                                    isInRoom = true
+                                }
+                                
                             }
                             Button("Log Out"){
                                 playerID = "null"
@@ -67,6 +69,9 @@ struct LobbyView: View {
                             Text("appsotre" +  roomID + " class" + player.roomID)
                         }
                     }
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .opacity(geometry.size.width < geometry.size.height ? 0 : 1)
+                    .zIndex(3)
                     .background(
                         
                         NavigationLink(destination: RoomView(player : $player, isInRoom : $isInRoom), isActive: $isInRoom) { EmptyView() }

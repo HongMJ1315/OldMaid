@@ -9,7 +9,13 @@ import SwiftUI
 import FirebaseFirestoreSwift
 
 struct RoomView: View {
-    @State var viewModel: RoomViewModel = RoomViewModel()
+    @StateObject var viewModel: RoomViewModel = RoomViewModel(){
+        willSet {
+//            self.objectWillChange.send()
+            print("get room playerr number \(viewModel.room?.players.count)")
+        }
+    
+    }
     @AppStorage("roomID") var roomID = "null"
     @Binding var isInRoom : Bool
     @Binding var player : Player
@@ -31,6 +37,8 @@ struct RoomView: View {
                     Group{
                         VStack{
                             Text(roomID)
+                            Text(viewModel.room?.hostPlayerID ?? "null")
+                            Text(player.playerID)
                             if let room = viewModel.room {
                                 ForEach(room.players, id: \.self) { playerID in
                                     Text(playerID)
@@ -39,6 +47,11 @@ struct RoomView: View {
                                 Text("No players available")
                             }
 
+                            Button("Start Game"){
+                                roomStart(roomID: roomID)
+                            }
+                            .disabled(viewModel.room?.players.count ?? 0 < 4 || viewModel.room?.hostPlayerID != player.playerID)
+                            
                             
                             Button("Exit"){
                                 isInRoom = false
@@ -49,13 +62,16 @@ struct RoomView: View {
                         }
                     }
                 }
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .opacity(geometry.size.width < geometry.size.height ? 0 : 1)
+                .zIndex(3)
             }
             
         }
         .navigationBarBackButtonHidden(true)
         .onAppear{
 
-            self.viewModel = RoomViewModel(roomID: roomID)
+            self.viewModel.setRoomID(roomID: roomID)
         }
     }
 }

@@ -28,6 +28,7 @@
 		C62A9DDE2A20EA8F00CE9206 /* LobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */; };
 		C6A2EE202A21DB6F00F02E04 /* RoomViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE1F2A21DB6F00F02E04 /* RoomViewModel.swift */; };
 		C6A2EE222A21E66F00F02E04 /* RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE212A21E66F00F02E04 /* RoomView.swift */; };
+		C6A2EE242A22601400F02E04 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE232A22601400F02E04 /* GameViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 		C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyView.swift; sourceTree = "<group>"; };
 		C6A2EE1F2A21DB6F00F02E04 /* RoomViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomViewModel.swift; sourceTree = "<group>"; };
 		C6A2EE212A21E66F00F02E04 /* RoomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
+		C6A2EE232A22601400F02E04 /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +114,7 @@
 				C62A9DBB2A20E4CF00CE9206 /* LogInViewModel.swift */,
 				C62A9DBC2A20E4CF00CE9206 /* MainViewModel.swift */,
 				C6A2EE1F2A21DB6F00F02E04 /* RoomViewModel.swift */,
+				C6A2EE232A22601400F02E04 /* GameViewModel.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -230,6 +233,7 @@
 				C62A9DCB2A20E4CF00CE9206 /* MainViewModel.swift in Sources */,
 				C62A9DD32A20E4CF00CE9206 /* MainView.swift in Sources */,
 				C62A9DCD2A20E4CF00CE9206 /* Card.swift in Sources */,
+				C6A2EE242A22601400F02E04 /* GameViewModel.swift in Sources */,
 				C6A2EE222A21E66F00F02E04 /* RoomView.swift in Sources */,
 				C62A9DCE2A20E4CF00CE9206 /* Room.swift in Sources */,
 				C62A9DCA2A20E4CF00CE9206 /* LogInViewModel.swift in Sources */,

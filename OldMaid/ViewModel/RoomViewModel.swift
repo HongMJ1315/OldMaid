@@ -10,10 +10,11 @@ import Foundation
 import Firebase
 
 class RoomViewModel: ObservableObject {
-    @Published var room: Room?{
-        willSet {
-            self.objectWillChange.send()
+    @Published var room: Room?{ // 被監聽的物件
+        willSet{
+            print("get room playerr number \(newValue?.players.count)")
         }
+    
     }
     var roomListener: ListenerRegistration?
     var roomID: String
@@ -26,7 +27,12 @@ class RoomViewModel: ObservableObject {
         self.roomID = roomID
         observeRoom()
     }
-
+    func setRoomID(roomID : String){
+        self.roomID = roomID
+        print("room set")
+        observeRoom()
+    
+    }
     deinit {
         stopObservingRoom()
     }
