@@ -10,7 +10,10 @@ import Firebase
 
 struct LobbyView: View {
     @AppStorage("playerID") var playerID = "null"
+    @AppStorage("roomID") var roomID = "null"
+    
     @State var player : Player = Player()
+    @State var isInRoom : Bool = false
     @Binding var isLogIn : Bool
     init(isLogIn : Binding<Bool>){
         _isLogIn = isLogIn
@@ -29,14 +32,28 @@ struct LobbyView: View {
                     Group{
                         VStack{
                             Button("Join room random"){
-                                print(playerID, player.playerID)
-                                joinRoomRandom(player: player)
+                                print("join room")
+                                print(playerID, player.roomID)
+                                joinRoomRandom(player: player){ result in
+                                    print("in room")
+                                    print(playerID," | ", player.roomID)
+                                    roomID = player.roomID
+                                    isInRoom = result
+
+                                }
+                                
                             }
                             Button("Joint room for room number"){
+                                joinRoomRandom(player: player){ result in
+                                    print("join room")
+                                    isInRoom = true
+                                
+                                    
+                                }
                                 
                             }
                             Button("Create Room"){
-                                
+                                createRoom()
                             }
                             Button("Log Out"){
                                 playerID = "null"
@@ -47,16 +64,27 @@ struct LobbyView: View {
                                    print(error)
                                 }
                             }
+                            Text("appsotre" +  roomID + " class" + player.roomID)
                         }
                     }
+                    .background(
+                        
+                        NavigationLink(destination: RoomView(player : $player, isInRoom : $isInRoom), isActive: $isInRoom) { EmptyView() }
+                        
+                    )
                 }
             }
             
         }
         .navigationBarBackButtonHidden(true)
-        .onAppear{
-            self.player = Player(playerID : playerID)
-
+        .onAppear {
+            self.player = Player(playerID: playerID, roomID: roomID)
+            print(player.roomID)
+            if !(roomID == "null" || roomID == ""){
+                isInRoom = true
+            } else {
+                isInRoom = false
+            }
         }
     }
 }

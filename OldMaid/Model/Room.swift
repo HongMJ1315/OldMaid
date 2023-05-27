@@ -121,64 +121,83 @@ func createRoom() -> String{
     }
     return roomID
 }
-func joinRoom(player : Player, roomID : String){
+func joinRoom(player: Player, roomID: String, completion: @escaping () -> Void) {
+    print("join" + roomID)
     let roomRef = db.collection("room").document(roomID)
-    roomRef.getDocument { (snapshot, error) in
-        guard let snapshot,
-              snapshot.exists,
-              var room = try? snapshot.data(as : Room.self) else { return }
-        room.players.append(player.playerID)
-        player.setRoomAndCard(deckID: room.deckID, roomID: room.roomID)
-        do {
-            try roomRef.setData(from: room)
-        } catch {
-            print(error)
-        }
-    }
-}
-func joinRoomWithRoomNumber(player: Player, roomNumber: String){
-    let query = db.collection("room").whereField("roomNumber", isEqualTo: roomNumber)
-    query.getDocuments { (snapshot, error) in
-        if let error = error {
-            print("Error fetching documents: \(error)")
+    roomRef.getDocument { snapshot, error in
+        guard let snapshot = snapshot, snapshot.exists, var room = try? snapshot.data(as: Room.self) else {
+            completion()
             return
         }
         
-        if let documents = snapshot?.documents {
-            if documents.isEmpty {
-                print("Room not found")
-                return
+        room.players.append(player.playerID)
+        player.setRoomAndCard(deckID: room.deckID, roomID: room.roomID)
+        do {
+            try roomRef.setData(from: room) { error in
+                if let error = error {
+                    print(error)
+                }
+                completion()
             }
-            
-            let room = documents[0]
-            let roomID = room.documentID
-            joinRoom(player: player, roomID: roomID)
+        } catch {
+            print(error)
+            completion()
         }
     }
 }
 
-func joinRoomRandom(player: Player) {
-    db.collection("room").getDocuments { snapshot, error in
-                
-    guard let snapshot else { return }
-
-        let room = snapshot.documents.compactMap { snapshot in
-            try? snapshot.data(as: Room.self)
+func joinRoomWithRoomNumber(player: Player, roomNumber: String, completion: @escaping (Bool) -> Void) {
+    let query = db.collection("room").whereField("roomNumber", isEqualTo: roomNumber)
+    query.getDocuments { snapshot, error in
+        if let error = error {
+            print("Error fetching documents: \(error)")
+            completion(false)
+            return
         }
         
-        while(true){
-            var randomRoom = room.randomElement()
-            print(randomRoom!.players.count, randomRoom!.roomID)
-            if(randomRoom!.players.count >= 8){
-                continue
+        if let documents = snapshot?.documents, let room = documents.first {
+            let roomID = room.documentID
+            joinRoom(player: player, roomID: roomID){
+                completion(true)
             }
-            joinRoom(player: player, roomID: randomRoom!.roomID)
-            break
+            
+        } else {
+            print("Room not found")
+            completion(false)
         }
-            
-            
     }
 }
+
+
+func joinRoomRandom(player: Player, completion: @escaping (Bool) -> Void) {
+    db.collection("room").getDocuments { snapshot, error in
+        guard let snapshot = snapshot else {
+            completion(false)
+            return
+        }
+
+        let rooms = snapshot.documents.compactMap { snapshot in
+            try? snapshot.data(as: Room.self)
+        }
+
+        while true {
+            guard let randomRoom = rooms.randomElement() else {
+                completion(false)
+                return
+            }
+
+            if randomRoom.players.count >= 8 {
+                continue
+            }
+            print("random room: " + randomRoom.roomID)
+            joinRoom(player: player, roomID: randomRoom.roomID){
+                completion(true)
+            }
+            return
+        }
+    }
+}
+
 
 func roomStart(roomID : String){
     let roomRef = db.collection("room").document(roomID)
@@ -265,6 +284,27 @@ func getRoomDeckID(roomID: String, completion: @escaping (String) -> Void) {
         let roomDeck = room.deckID
         print("room.deckID = " + roomDeck)
         completion(roomDeck) // 将结果传递给回调函数
+    }
+}
+
+func quitRoom(player : Player){
+    let roomRef = db.collection("room").document(player.roomID)
+    roomRef.getDocument { (snapshot, error) in
+        guard let snapshot,
+              snapshot.exists,
+              var room = try? snapshot.data(as : Room.self) else { return }
+        room.players.removeAll(where: {$0 == player.playerID})
+        player.roomID = ""
+        player.deckID = ""
+        let playerRef = db.collection("player").document(player.playerID)
+        try? playerRef.setData(from: player)
+        
+        
+        do {
+            try roomRef.setData(from: room)
+        } catch {
+            print(error)
+        }
     }
 }
 

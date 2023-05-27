@@ -31,6 +31,17 @@ class Player: ObservableObject, Codable {
             "deck" : deck
         ])
     }
+    init(playerID : String, roomID : String) {
+        self.roomID = roomID
+        let playerRef = db.collection("player").document(playerID)
+        self.playerID = playerID
+        playerRef.setData([
+            "playerID": playerID,
+            "roomID": roomID,
+            "deckID": deckID,
+            "deck" : deck
+        ])
+    }
     
     func appendCard(card: Card) {
         deck.append(card)

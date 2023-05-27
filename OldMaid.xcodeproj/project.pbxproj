@@ -26,6 +26,8 @@
 		C62A9DDA2A20E8C500CE9206 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C62A9DD92A20E8C500CE9206 /* FirebaseFirestoreSwift */; };
 		C62A9DDC2A20E8C500CE9206 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = C62A9DDB2A20E8C500CE9206 /* FirebaseStorage */; };
 		C62A9DDE2A20EA8F00CE9206 /* LobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */; };
+		C6A2EE202A21DB6F00F02E04 /* RoomViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE1F2A21DB6F00F02E04 /* RoomViewModel.swift */; };
+		C6A2EE222A21E66F00F02E04 /* RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE212A21E66F00F02E04 /* RoomView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +48,8 @@
 		C62A9DC62A20E4CF00CE9206 /* LogInView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInView.swift; sourceTree = "<group>"; };
 		C62A9DC72A20E4CF00CE9206 /* MainView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyView.swift; sourceTree = "<group>"; };
+		C6A2EE1F2A21DB6F00F02E04 /* RoomViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomViewModel.swift; sourceTree = "<group>"; };
+		C6A2EE212A21E66F00F02E04 /* RoomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +111,7 @@
 			children = (
 				C62A9DBB2A20E4CF00CE9206 /* LogInViewModel.swift */,
 				C62A9DBC2A20E4CF00CE9206 /* MainViewModel.swift */,
+				C6A2EE1F2A21DB6F00F02E04 /* RoomViewModel.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -137,6 +142,7 @@
 				C62A9DC62A20E4CF00CE9206 /* LogInView.swift */,
 				C62A9DC72A20E4CF00CE9206 /* MainView.swift */,
 				C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */,
+				C6A2EE212A21E66F00F02E04 /* RoomView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -224,12 +230,14 @@
 				C62A9DCB2A20E4CF00CE9206 /* MainViewModel.swift in Sources */,
 				C62A9DD32A20E4CF00CE9206 /* MainView.swift in Sources */,
 				C62A9DCD2A20E4CF00CE9206 /* Card.swift in Sources */,
+				C6A2EE222A21E66F00F02E04 /* RoomView.swift in Sources */,
 				C62A9DCE2A20E4CF00CE9206 /* Room.swift in Sources */,
 				C62A9DCA2A20E4CF00CE9206 /* LogInViewModel.swift in Sources */,
 				C62A9DDE2A20EA8F00CE9206 /* LobbyView.swift in Sources */,
 				C62A9DD12A20E4CF00CE9206 /* CardView.swift in Sources */,
 				C62A9DCF2A20E4CF00CE9206 /* Deck.swift in Sources */,
 				C62A9DAD2A20E49300CE9206 /* ContentView.swift in Sources */,
+				C6A2EE202A21DB6F00F02E04 /* RoomViewModel.swift in Sources */,
 				C62A9DAB2A20E49300CE9206 /* OldMaidApp.swift in Sources */,
 				C62A9DD22A20E4CF00CE9206 /* LogInView.swift in Sources */,
 				C62A9DD02A20E4CF00CE9206 /* Player.swift in Sources */,
@@ -335,6 +343,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -346,6 +355,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -369,6 +379,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -398,6 +409,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
