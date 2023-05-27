@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseFirestoreSwift
 
 class Player: ObservableObject, Codable {
     @Published var playerID: String
@@ -75,4 +76,77 @@ class Player: ObservableObject, Codable {
         try container.encode(deck, forKey: .deck)
     }
 }
+
+func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int){
+    let formPlayerRef = db.collection("player").document(formPlayerID)
+    let toPlayerRef = db.collection("player").document(toPlayer.playerID)
+    formPlayerRef.getDocument { document, error in
+        if let document = document, document.exists {
+            let formPlayer = try! document.data(as: Player.self)
+            let tmpCard = formPlayer.deck[cardIndex]
+            formPlayer.deck.remove(at: cardIndex)
+            formPlayerRef.setData([
+                "playerID": formPlayer.playerID,
+                "roomID": formPlayer.roomID,
+                "deckID": formPlayer.deckID,
+                "deck" : formPlayer.deck
+            ])
+            toPlayer.deck.append(tmpCard)
+            toPlayerRef.setData([
+                "playerID": toPlayer.playerID,
+                "roomID": toPlayer.roomID,
+                "deckID": toPlayer.deckID,
+                "deck" : toPlayer.deck
+            ])
+        } else {
+            // Document doesn't exist or there was an error
+            print("Failed to retrieve room document:", error ?? "Unknown error")
+        }
+    }
+}
+
+func playerCardShuffle(player:Player){
+    player.deck.shuffle()
+    db.collection("player").document(player.playerID).setData([
+        "playerID": player.playerID,
+        "roomID": player.roomID,
+        "deckID": player.deckID,
+        "deck" : player.deck
+    ])
+}
+func abandonCardFromPlayer(formPlayer: Player, cardIndex: Int, roomID: String){
+    let tmpCard = formPlayer.deck[cardIndex]
+    formPlayer.deck.remove(at: cardIndex)
+    db.collection("player").document(formPlayer.playerID).setData([
+        "playerID": formPlayer.playerID,
+        "roomID": formPlayer.roomID,
+        "deckID": formPlayer.deckID,
+        "deck" : formPlayer.deck
+    ])
+    let roomRef = db.collection("room").document(roomID)
+
+    roomRef.getDocument { document, error in
+        if let document = document, document.exists {
+            var abandonCard = document.data()?["abandonCard"] as? [Card] ?? []
+            abandonCard.append(tmpCard)
+
+            roomRef.updateData([
+                "abandonCard": abandonCard
+            ]) { error in
+                if let error = error {
+                    // Handle update failure
+                    print("Failed to update abandonCard:", error)
+                } else {
+                    // Update successful
+                    print("abandonCard updated successfully")
+                }
+            }
+        } else {
+            // Document doesn't exist or there was an error
+            print("Failed to retrieve room document:", error ?? "Unknown error")
+        }
+    }
+
+}
+
 
