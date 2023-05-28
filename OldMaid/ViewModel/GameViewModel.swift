@@ -14,6 +14,9 @@ class GameViewModel : ObservableObject {
     var roomID: String = ""
     var nextPlayerID: String = ""
     @Published var nextPlayerCardNumber : Int?
+    @Published var playerIndex : Int?
+    @Published var nowTurn : Int?
+    @Published var isChoosed : Bool?
     init(){
         playerID = ""
     }
@@ -22,39 +25,32 @@ class GameViewModel : ObservableObject {
             print("next player id:", result)
             self.nextPlayerID = result
             self.observeNextPlayer(nextPlayerID: result )
+            self.setRoomID(roomID: roomID)
+            self.observePlayer()
+            self.observeRoom()
         }
-//        setPlayerID(playerID: playerID)
-        setRoomID(roomID: roomID)
-        observeRoom()
-        observePlayer()
-//        observeNextPlayer()
     }
     func setPlayerAndRoomID(playerID: String, roomID:String){
         setPlayerID(playerID: playerID){ result in
             print("next player id:", result)
             self.nextPlayerID = result
             self.observeNextPlayer(nextPlayerID: result )
+            self.setRoomID(roomID: roomID)
+            self.observePlayer()
+            self.observeRoom()
         }
-//        setPlayerID(playerID: playerID)
-        setRoomID(roomID: roomID)
-        observeRoom()
-        observePlayer()
-//        observeNextPlayer()
     }
     func setPlayerID(playerID: String, completion: @escaping (String) -> Void){
         self.playerID = playerID
         let playerRef = db.collection("player").document(playerID)
         playerRef.getDocument { (document, error) in
             guard let document = document, document.exists else{
-                print("no document1")
-
                 return
             }
             self.player = try? document.data(as : Player.self)
             let roomRef = db.collection("room").document(self.player!.roomID)
             roomRef.getDocument { (document, error) in
                 guard let document = document, document.exists else{
-                    print("no document2" , self.player!.roomID)
                     return
                 }
                 let room = try? document.data(as : Room.self)
@@ -73,12 +69,19 @@ class GameViewModel : ObservableObject {
     }
     func setRoomID(roomID : String){
         self.roomID = roomID
-        let roomRef = db.collection("roomID").document(roomID)
+        let roomRef = db.collection("room").document(roomID)
         roomRef.getDocument { (document, error) in
             guard let document = document, document.exists else{
                 return
             }
             self.room = try? document.data(as : Room.self)
+            
+            for i in self.room!.players.indices{
+                if(self.room!.players[i] == self.player!.playerID){
+                    self.playerIndex = i
+                    return
+                }
+            }
         }
     }
     func observePlayer(){
@@ -100,18 +103,24 @@ class GameViewModel : ObservableObject {
                 return
             }
             let player = try? document.data(as : Player.self)
-            print("nxet player :" ,player!.deck.count)
             self.nextPlayerCardNumber = player!.deck.count
         }
     }
     func observeRoom(){
-        let roomRef = db.collection("roomID").document(roomID)
+        let roomRef = db.collection("room").document(roomID)
         roomRef.addSnapshotListener { (documentSnapshot, error) in
             guard let document = documentSnapshot else{
                 print("no document")
                 return
             }
             self.room = try? document.data(as : Room.self)
+            if(self.room?.turn == self.playerIndex){
+                self.isChoosed = true
+            }
+            else{
+                self.isChoosed = false
+            }
+            print("now turn \(self.room?.turn) \(self.playerIndex) \(self.isChoosed)")
         }
     }
     func shuffle(){

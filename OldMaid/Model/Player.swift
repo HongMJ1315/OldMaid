@@ -107,7 +107,7 @@ class Player: ObservableObject, Codable {
     }
 }
 
-func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int){
+func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int, completion: @escaping (Bool) -> Void){
     let formPlayerRef = db.collection("player").document(formPlayerID)
     let toPlayerRef = db.collection("player").document(toPlayer.playerID)
     formPlayerRef.getDocument { document, error in
@@ -147,9 +147,11 @@ func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int){
                 "deckID": toPlayer.deckID,
                 "deck" : cardsData
             ])
+            completion(true)
         } else {
             // Document doesn't exist or there was an error
             print("Failed to retrieve room document:", error ?? "Unknown error")
+            completion(false)
         }
     }
 }

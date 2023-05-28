@@ -17,6 +17,7 @@ struct GameView: View {
     @State var tapCardIndex : Int = -1
     @State var secondTapCardIndex : Int = -1
     @State var chooseCard : Int = -1
+    @State var dealFinish : Bool = false
     var body: some View {
         NavigationView{
             GeometryReader{ geometry in
@@ -40,11 +41,19 @@ struct GameView: View {
                                                     .opacity(chooseCard == index ? 1 : 0)
                                             )
                                             .onTapGesture {
-                                                if(chooseCard == index){
-                                                    print("chooseCard == index")
-                                                    dealCardFromPlayer(formPlayerID: viewModel.nextPlayerID, toPlayer: viewModel.player!, cardIndex: chooseCard)
+                                                
+                                                if(!viewModel.isChoosed!){
                                                     chooseCard = -1
-
+                                                    return
+                                                }
+                                                if(chooseCard == index && viewModel.isChoosed!){
+                                                    print("chooseCard == index")
+                                                    dealCardFromPlayer(formPlayerID: viewModel.nextPlayerID, toPlayer: viewModel.player!, cardIndex: chooseCard){ result in
+                                                        self.dealFinish = result
+                                                        
+                                                    }
+                                                    chooseCard = -1
+                                                    viewModel.isChoosed = false
                                                     return
                                                 }
                                                 chooseCard = index
@@ -54,21 +63,28 @@ struct GameView: View {
                                     }
                                 }
                             }
-                            Button("Shuffle") {
-                                isMoving = true
-                                withAnimation(.easeInOut(duration: 0.5)) {
-                                    opacityValue = 0
-                                }
-                                
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                    viewModel.shuffle()
+                            HStack{
+                                Button("Shuffle") {
+                                    isMoving = true
                                     withAnimation(.easeInOut(duration: 0.5)) {
-                                        opacityValue = 1
+                                        opacityValue = 0
                                     }
-                                    isMoving = false
+                                    
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                        viewModel.shuffle()
+                                        withAnimation(.easeInOut(duration: 0.5)) {
+                                            opacityValue = 1
+                                        }
+                                        isMoving = false
+                                    }
                                 }
-
-                            
+                                Button("Next"){
+                                    nextPlayer(roomID: roomID)
+                                    dealFinish = false
+                                }
+                                .disabled(!dealFinish )
+                                
+                                
                             }
 
                             HStack {

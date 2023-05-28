@@ -35,7 +35,7 @@ struct Room: Codable, Identifiable {
         case turn
     }
 
-    init(id: String? = nil, deckID: String, roomID: String, roomNumber: String, players: [String], hostPlayerID: String, abandonCard: [Card] = [], isStart: Bool) {
+    init(id: String? = nil, deckID: String, roomID: String, roomNumber: String, players: [String], hostPlayerID: String, abandonCard: [Card] = [], isStart: Bool, turn : Int) {
         self.id = id
         self.deckID = deckID
         self.roomID = roomID
@@ -44,8 +44,7 @@ struct Room: Codable, Identifiable {
         self.hostPlayerID = hostPlayerID
         self.abandonCard = abandonCard
         self.isStart = isStart
-        self.turn = -1
-    
+        self.turn = turn
     }
 
     init(from decoder: Decoder) throws {
@@ -129,7 +128,7 @@ func createRoom(player : Player) -> String{
     let roomRef = db.collection("room").document()
     let roomID = roomRef.documentID
     var roomNumber = getRoomNumber()
-    let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [], hostPlayerID: player.playerID, isStart: false)
+    let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [], hostPlayerID: player.playerID, isStart: false, turn: -1)
     print("==============" + roomID + "================")
     do{
         try roomRef.setData(from : room)
@@ -252,7 +251,7 @@ func roomStart(roomID : String){
         
         dealNextPlayer() // 开始处理第一个玩家
         roomRef.updateData(["isStart" : true])
-    
+        roomRef.updateData(["turn" : 0])
     }
 }
 func dealToPlayer(playerID: String, deckID: String, completion: @escaping (Bool) -> Void) {
@@ -364,6 +363,7 @@ func nextPlayer(roomID : String){
               snapshot.exists,
               var room = try? snapshot.data(as : Room.self) else { return }
         room.turn = (room.turn + 1) % room.players.count
+        
         do{
             try roomRef.setData(from: room)
         } catch{
