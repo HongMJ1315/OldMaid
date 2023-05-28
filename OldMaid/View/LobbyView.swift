@@ -31,12 +31,11 @@ struct LobbyView: View {
                     .zIndex(4)
                     Group{
                         VStack{
+                            Text(player.playerID)
                             Button("Join room random"){
-                                print("join room")
                                 print(playerID, player.roomID)
                                 joinRoomRandom(player: player){ result in
-                                    print("in room")
-                                    print(playerID," | ", player.roomID)
+
                                     roomID = player.roomID
                                     isInRoom = result
 
@@ -45,10 +44,8 @@ struct LobbyView: View {
                             }
                             Button("Joint room for room number"){
                                 joinRoomRandom(player: player){ result in
-                                    print("join room")
                                     isInRoom = true
                                 }
-                                
                             }
                             Button("Create Room"){
                                 joinRoom(player:player, roomID:createRoom(player:player)){
@@ -74,7 +71,7 @@ struct LobbyView: View {
                     .zIndex(3)
                     .background(
                         
-                        NavigationLink(destination: RoomView(player : $player, isInRoom : $isInRoom), isActive: $isInRoom) { EmptyView() }
+                        NavigationLink(destination: RoomView(player : $player, isInRoom : $isInRoom), isActive: $isInRoom) { Text(":(") }
                         
                     )
                 }
@@ -83,11 +80,13 @@ struct LobbyView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            self.player = Player(playerID: playerID, roomID: roomID)
-            print(player.roomID)
+            self.player.setPlayerInfo(playerID: playerID, roomID: roomID)
+            print("roomID: ", player.roomID)
             if !(roomID == "null" || roomID == ""){
                 isInRoom = true
             } else {
+                player.roomID = ""
+                player.deckID = ""
                 isInRoom = false
             }
         }

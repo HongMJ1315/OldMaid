@@ -7,16 +7,11 @@
 
 import SwiftUI
 
-struct CardView: View {
+struct CardView: View{
     let card: Card?
-    let title: String
     
     var body: some View {
         VStack {
-            Text(title)
-                .font(.title2)
-                .padding(.bottom)
-            
             if let card = card {
                 VStack {
                     Text(card.rank.description)
@@ -36,10 +31,13 @@ struct CardView: View {
             }
         }
     }
+
 }
 
-struct CardView_Previews: PreviewProvider {
-    static var previews: some View {
-        CardView(card: Card(suit: .spades, rank: .ace), title: "HI")
-    }
-}
+
+
+//struct CardView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        CardView(card: Card(suit: .spades, rank: .ace), title: "HI")
+//    }
+//}

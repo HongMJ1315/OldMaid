@@ -33,9 +33,49 @@ class Player: ObservableObject, Codable {
         ])
     }
     init(playerID : String, roomID : String) {
+        self.playerID = playerID
+        self.roomID = roomID
+        setPlayerInfo(playerID: playerID, roomID: roomID)
+    }
+    func setPlayerInfo(playerID : String, roomID : String) {
         self.roomID = roomID
         let playerRef = db.collection("player").document(playerID)
         self.playerID = playerID
+        print(roomID, playerID)
+        playerRef.getDocument { (document, error) in
+            guard let document = document, document.exists else{
+                return
+            }
+            
+            if let player = try? document.data(as : Player.self){
+                self.deck = player.deck
+                self.deckID = player.deckID
+            
+            }
+               
+            
+            
+            var cardsData: [[String: Int]] = []
+            for i in self.deck{
+                let cardData: [String: Int] = [
+                    "suit": i.suit.rawValue,
+                    "rank": i.rank.rawValue
+                ]
+                cardsData.append(cardData)
+            }
+            playerRef.setData([
+                "playerID": playerID,
+                "roomID": roomID,
+                "deckID": self.deckID,
+                "deck" : cardsData
+            
+            ])
+        }
+    }
+    
+    func setRoomID(roomID: String) {
+        self.roomID = roomID
+        let playerRef = db.collection("player").document(playerID)
         playerRef.setData([
             "playerID": playerID,
             "roomID": roomID,
@@ -48,17 +88,7 @@ class Player: ObservableObject, Codable {
         deck.append(card)
     }
     
-    func setRoomAndCard(deckID: String, roomID: String) {
-        self.deckID = deckID
-        self.roomID = roomID
-        let playerRef = db.collection("player").document(playerID)
-        playerRef.setData([
-            "playerID": playerID,
-            "roomID": roomID,
-            "deckID": deckID,
-            "deck" : deck
-        ])
-    }
+    
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -82,21 +112,40 @@ func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int){
     let toPlayerRef = db.collection("player").document(toPlayer.playerID)
     formPlayerRef.getDocument { document, error in
         if let document = document, document.exists {
-            let formPlayer = try! document.data(as: Player.self)
+            var formPlayer = try! document.data(as: Player.self)
             let tmpCard = formPlayer.deck[cardIndex]
+            
             formPlayer.deck.remove(at: cardIndex)
+            var cardsData: [[String: Int]] = []
+            for i in formPlayer.deck{
+                print("there: ", i.suit, i.rank)
+                let cardData: [String: Int] = [
+                    "suit": i.suit.rawValue,
+                    "rank": i.rank.rawValue
+                ]
+                cardsData.append(cardData)
+            }
             formPlayerRef.setData([
                 "playerID": formPlayer.playerID,
                 "roomID": formPlayer.roomID,
                 "deckID": formPlayer.deckID,
-                "deck" : formPlayer.deck
+                "deck" : cardsData
             ])
+            cardsData = []
+            for i in toPlayer.deck{
+                print("there: ", i.suit, i.rank)
+                let cardData: [String: Int] = [
+                    "suit": i.suit.rawValue,
+                    "rank": i.rank.rawValue
+                ]
+                cardsData.append(cardData)
+            }
             toPlayer.deck.append(tmpCard)
             toPlayerRef.setData([
                 "playerID": toPlayer.playerID,
                 "roomID": toPlayer.roomID,
                 "deckID": toPlayer.deckID,
-                "deck" : toPlayer.deck
+                "deck" : cardsData
             ])
         } else {
             // Document doesn't exist or there was an error
@@ -107,46 +156,83 @@ func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int){
 
 func playerCardShuffle(player:Player){
     player.deck.shuffle()
+    var cardsData: [[String: Int]] = []
+    for i in player.deck{
+        print("there: ", i.suit, i.rank)
+        let cardData: [String: Int] = [
+            "suit": i.suit.rawValue,
+            "rank": i.rank.rawValue
+        ]
+        cardsData.append(cardData)
+    }
+    
     db.collection("player").document(player.playerID).setData([
         "playerID": player.playerID,
         "roomID": player.roomID,
         "deckID": player.deckID,
-        "deck" : player.deck
+        "deck" : cardsData
     ])
 }
-func abandonCardFromPlayer(formPlayer: Player, cardIndex: Int, roomID: String){
-    let tmpCard = formPlayer.deck[cardIndex]
-    formPlayer.deck.remove(at: cardIndex)
+func abandonCardFromPlayer(formPlayer: Player, firstCardIndex: Int, secondCardIndex: Int, roomID: String){
+    let tmpCard = formPlayer.deck[firstCardIndex]
+    let tmpCard2 = formPlayer.deck[secondCardIndex]
+    var tmpFirstCardIndex = firstCardIndex
+    var tmpSecondCardIndex = secondCardIndex
+    if(tmpFirstCardIndex > tmpSecondCardIndex){
+        swap(&tmpFirstCardIndex, &tmpSecondCardIndex)
+    }
+    formPlayer.deck.remove(at: tmpSecondCardIndex)
+    formPlayer.deck.remove(at: tmpFirstCardIndex)
+    var cardsData: [[String: Int]] = []
+    for card in formPlayer.deck {
+        let cardData: [String: Int] = [
+            "suit": card.suit.rawValue,
+            "rank": card.rank.rawValue
+        ]
+        cardsData.append(cardData)
+    }
     db.collection("player").document(formPlayer.playerID).setData([
         "playerID": formPlayer.playerID,
         "roomID": formPlayer.roomID,
         "deckID": formPlayer.deckID,
-        "deck" : formPlayer.deck
+        "deck" : cardsData
     ])
     let roomRef = db.collection("room").document(roomID)
 
     roomRef.getDocument { document, error in
-        if let document = document, document.exists {
-            var abandonCard = document.data()?["abandonCard"] as? [Card] ?? []
-            abandonCard.append(tmpCard)
-
-            roomRef.updateData([
-                "abandonCard": abandonCard
-            ]) { error in
-                if let error = error {
-                    // Handle update failure
-                    print("Failed to update abandonCard:", error)
-                } else {
-                    // Update successful
-                    print("abandonCard updated successfully")
-                }
-            }
-        } else {
-            // Document doesn't exist or there was an error
-            print("Failed to retrieve room document:", error ?? "Unknown error")
+        guard let document = document, document.exists, var room = try? document.data(as: Room.self) else{
+            return
         }
+        room.abandonCard.append(tmpCard)
+        room.abandonCard.append(tmpCard2)
+        var abandonCardsData: [[String: Int]] = []
+        for card in room.abandonCard {
+            let cardData: [String: Int] = [
+                "suit": card.suit.rawValue,
+                "rank": card.rank.rawValue
+            ]
+            abandonCardsData.append(cardData)
+            do {
+                try roomRef.setData(from: room) { error in
+                    if let error = error {
+                        print(error)
+                    }
+                }
+            } catch {
+                print(error)
+            }
+        }
+        
     }
 
 }
 
+func resetPlayer(player : Player){
+    db.collection("player").document(player.playerID).setData([
+        "playerID": player.playerID,
+        "roomID": "",
+        "deckID": "",
+        "deck" : []
+    ])
+}
 

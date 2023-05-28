@@ -176,6 +176,7 @@ struct LogInFormView : View{
     @State var alertMessage = ""
     @Binding var isLogIn: Bool
     @AppStorage("playerID") var playerID = "null"
+    @AppStorage("roomID") var roomID = "null"
 
     
     
@@ -206,6 +207,7 @@ struct LogInFormView : View{
                                         presentationMode.wrappedValue.dismiss()
                                         isLogIn = true
                                         playerID = viewModel.user!.playerID
+                                        roomID = viewModel.user!.roomID
                                         print("Log in Success \(playerID)")
                                     }else{
                                         alertMessage = "Log In Failed"
@@ -236,9 +238,9 @@ struct LogInFormView : View{
     }
 }
 
-
-struct LogInView_Previews: PreviewProvider {
-    static var previews: some View {
-        LogInView()
-    }
-}
+//
+//struct LogInView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        LogInView()
+//    }
+//}

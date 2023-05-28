@@ -10,26 +10,18 @@ import Foundation
 import Firebase
 
 class RoomViewModel: ObservableObject {
-    @Published var room: Room?{ // 被監聽的物件
-        willSet{
-            print("get room playerr number \(newValue?.players.count)")
-        }
-    
-    }
+    @Published var room: Room?
     var roomListener: ListenerRegistration?
     var roomID: String
     init(){
-        print("room view init")
         roomID = ""
     }
     init(roomID: String) {
-        print("room view init for \(roomID)")
         self.roomID = roomID
         observeRoom()
     }
     func setRoomID(roomID : String){
         self.roomID = roomID
-        print("room set")
         observeRoom()
     
     }
@@ -50,7 +42,6 @@ class RoomViewModel: ObservableObject {
                 self?.room = try snapshot.data(as: Room.self)
                 self?.objectWillChange.send() // 觸發發布更新
 
-                print("get")
                 if let room = self!.room{
                     for i in room.players{
                         print(i)
@@ -58,7 +49,6 @@ class RoomViewModel: ObservableObject {
                 }
             } catch {
                 // Failed to decode Room document
-                print("Failed to decode Room:", error)
                 self?.room = nil
             }
         }

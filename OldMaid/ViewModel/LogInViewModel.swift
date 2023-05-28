@@ -55,6 +55,21 @@ class LogInViewModel: ObservableObject{
                 return
             }
             self.user = Player(playerID: userData.uid)
+            let playerRef = db.collection("player").document(userData.uid)
+            //set roomID
+            playerRef.getDocument { (document, error) in
+                guard let document = document, document.exists else{
+                    print("document not exist")
+                    return
+                }
+                let player = try? document.data(as : Player.self)
+                if(player!.roomID == ""){
+                    playerRef.updateData(["roomID" : ""])
+                }
+                print("roomID: \(player!.roomID)")
+            
+            }
+            
             completion(true)
         }
     }

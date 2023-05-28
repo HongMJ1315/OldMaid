@@ -21,6 +21,7 @@ struct Room: Codable, Identifiable {
     var hostPlayerID : String
     var abandonCard: [Card] = []
     var isStart: Bool
+    var turn: Int
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -31,7 +32,7 @@ struct Room: Codable, Identifiable {
         case hostPlayerID
         case abandonCard
         case isStart
-    
+        case turn
     }
 
     init(id: String? = nil, deckID: String, roomID: String, roomNumber: String, players: [String], hostPlayerID: String, abandonCard: [Card] = [], isStart: Bool) {
@@ -43,6 +44,7 @@ struct Room: Codable, Identifiable {
         self.hostPlayerID = hostPlayerID
         self.abandonCard = abandonCard
         self.isStart = isStart
+        self.turn = -1
     
     }
 
@@ -56,7 +58,7 @@ struct Room: Codable, Identifiable {
         hostPlayerID = try container.decode(String.self, forKey: .hostPlayerID)
         abandonCard = try container.decode([Card].self, forKey: .abandonCard)
         isStart = try container.decode(Bool.self, forKey: .isStart)
-    
+        turn = try container.decode(Int.self, forKey: .turn)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -69,7 +71,7 @@ struct Room: Codable, Identifiable {
         try container.encode(hostPlayerID, forKey: .hostPlayerID)
         try container.encode(abandonCard, forKey: .abandonCard)
         try container.encode(isStart, forKey: .isStart)
-    
+        try container.encode(turn, forKey: .turn)
     }
 }
 
@@ -122,6 +124,7 @@ func isRoomNumberUnique(roomNumber: String) -> Bool {
 }
 
 func createRoom(player : Player) -> String{
+    print("\(player.playerID) create room")
     let deckID : String = createDeck()
     let roomRef = db.collection("room").document()
     let roomID = roomRef.documentID
@@ -137,7 +140,7 @@ func createRoom(player : Player) -> String{
     return roomID
 }
 func joinRoom(player: Player, roomID: String, completion: @escaping () -> Void) {
-    print("join" + roomID)
+    print("\(player.playerID) join room \(roomID)")
     let roomRef = db.collection("room").document(roomID)
     roomRef.getDocument { snapshot, error in
         guard let snapshot = snapshot, snapshot.exists, var room = try? snapshot.data(as: Room.self) else {
@@ -146,7 +149,7 @@ func joinRoom(player: Player, roomID: String, completion: @escaping () -> Void) 
         }
         
         room.players.append(player.playerID)
-        player.setRoomAndCard(deckID: room.deckID, roomID: room.roomID)
+        player.setPlayerInfo(playerID: player.playerID, roomID: room.roomID)
         do {
             try roomRef.setData(from: room) { error in
                 if let error = error {
@@ -204,7 +207,7 @@ func joinRoomRandom(player: Player, completion: @escaping (Bool) -> Void) {
             if randomRoom.players.count >= 8 {
                 continue
             }
-            print("random room: " + randomRoom.roomID)
+            print("random room: " + randomRoom.roomID + " " + player.playerID)
             joinRoom(player: player, roomID: randomRoom.roomID){
                 completion(true)
             }
@@ -298,13 +301,14 @@ func getRoomDeckID(roomID: String, completion: @escaping (String) -> Void) {
         }
         
         let roomDeck = room.deckID
-        print("room.deckID = " + roomDeck)
         completion(roomDeck) // 将结果传递给回调函数
     }
 }
 
 func quitRoom(player : Player){
     let roomRef = db.collection("room").document(player.roomID)
+    print("\(player.playerID) quit room \(player.roomID)")
+    
     roomRef.getDocument { (snapshot, error) in
         guard let snapshot,
               snapshot.exists,
@@ -314,7 +318,10 @@ func quitRoom(player : Player){
         player.deckID = ""
         let playerRef = db.collection("player").document(player.playerID)
         try? playerRef.setData(from: player)
-        
+//        if(room.hostPlayerID == player.playerID || room.players.count == 0){
+//            roomRef.delete()
+//            return
+//        }
         
         do {
             try roomRef.setData(from: room)
@@ -323,6 +330,48 @@ func quitRoom(player : Player){
         }
     }
 }
+
+func checkRoomIlliberal(roomID : String, completion: @escaping (Bool) -> Void){
+    let roomRef = db.collection("room").document(roomID)
+    roomRef.getDocument { (snapshot, error) in
+        guard let snapshot,
+              snapshot.exists,
+              let room = try? snapshot.data(as : Room.self) else {
+            completion(false)
+            return
+        }
+        completion(true)
+    }
+}
+
+func checkRoomIsStart(roomID : String, completion: @escaping(Bool) ->Void){
+    let roomRef = db.collection("room").document(roomID)
+    roomRef.getDocument { (snapshot, error) in
+        guard let snapshot,
+              snapshot.exists,
+              let room = try? snapshot.data(as : Room.self) else {
+            completion(false)
+            return
+        }
+        completion(room.isStart)
+    }
+}
+
+func nextPlayer(roomID : String){
+    let roomRef = db.collection("room").document(roomID)
+    roomRef.getDocument { (snapshot, error) in
+        guard let snapshot,
+              snapshot.exists,
+              var room = try? snapshot.data(as : Room.self) else { return }
+        room.turn = (room.turn + 1) % room.players.count
+        do{
+            try roomRef.setData(from: room)
+        } catch{
+            print(error)
+        }
+    }
+}
+
 
 //-------------
 //Test

@@ -27,6 +27,7 @@
 		C6A2EE202A21DB6F00F02E04 /* RoomViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE1F2A21DB6F00F02E04 /* RoomViewModel.swift */; };
 		C6A2EE222A21E66F00F02E04 /* RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE212A21E66F00F02E04 /* RoomView.swift */; };
 		C6A2EE242A22601400F02E04 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE232A22601400F02E04 /* GameViewModel.swift */; };
+		C6E05DD02A231977005A620F /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6E05DCF2A231977005A620F /* GameView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +49,7 @@
 		C6A2EE1F2A21DB6F00F02E04 /* RoomViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomViewModel.swift; sourceTree = "<group>"; };
 		C6A2EE212A21E66F00F02E04 /* RoomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
 		C6A2EE232A22601400F02E04 /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
+		C6E05DCF2A231977005A620F /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,6 +142,7 @@
 				C62A9DC62A20E4CF00CE9206 /* LogInView.swift */,
 				C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */,
 				C6A2EE212A21E66F00F02E04 /* RoomView.swift */,
+				C6E05DCF2A231977005A620F /* GameView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -230,6 +233,7 @@
 				C62A9DCE2A20E4CF00CE9206 /* Room.swift in Sources */,
 				C62A9DCA2A20E4CF00CE9206 /* LogInViewModel.swift in Sources */,
 				C62A9DDE2A20EA8F00CE9206 /* LobbyView.swift in Sources */,
+				C6E05DD02A231977005A620F /* GameView.swift in Sources */,
 				C62A9DD12A20E4CF00CE9206 /* CardView.swift in Sources */,
 				C62A9DCF2A20E4CF00CE9206 /* Deck.swift in Sources */,
 				C62A9DAD2A20E49300CE9206 /* ContentView.swift in Sources */,

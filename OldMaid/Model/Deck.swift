@@ -20,7 +20,7 @@ func createDeck() -> String{
     var deckID: String = ""
     for suit in Card.Suit.allCases {
         for rank in Card.Rank.allCases {
-            if(suit == Card.Suit.joker || rank == Card.Rank.joker) {continue}
+            if(suit == Card.Suit.joker || rank == Card.Rank.joker || suit == Card.Suit.unknowMark || rank == Card.Rank.unknowMark) {continue}
             cards.append(Card(suit: suit, rank: rank))
         }
     }
@@ -44,6 +44,7 @@ func createDeck() -> String{
     ])
     return deckID
 }
+
 
 func deal(deckID: String, completion: @escaping (Card?) -> Void) {
     // 从数据库中获取牌组数据

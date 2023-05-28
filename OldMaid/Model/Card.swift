@@ -7,7 +7,9 @@
 
 import Foundation
 
-struct Card: Comparable, Codable {
+struct Card: Comparable, Codable, Identifiable, Hashable {
+    let id = UUID()
+    
     let suit: Suit
     let rank: Rank
 
@@ -28,6 +30,7 @@ struct Card: Comparable, Codable {
         case diamonds
         case hearts
         case spades
+        case unknowMark
     }
 
     enum Rank: Int, CaseIterable, Codable {
@@ -45,6 +48,7 @@ struct Card: Comparable, Codable {
         case jack
         case queen
         case king
+        case unknowMark
     }
 }
 
@@ -62,6 +66,8 @@ extension Card.Rank: CustomStringConvertible {
             return "J"
         case .joker:
             return "🃏"
+        case .unknowMark:
+            return "?"
         default:
             return "\(rawValue)"
         }
@@ -81,6 +87,8 @@ extension Card.Suit: CustomStringConvertible {
             return "♠️"
         case .joker:
             return "🃏"
+        case .unknowMark:
+            return "?"
         }
     }
 }
