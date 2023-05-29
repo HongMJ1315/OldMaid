@@ -216,7 +216,7 @@ func joinRoomRandom(player: Player, completion: @escaping (Bool) -> Void) {
 }
 
 
-func roomStart(roomID : String){
+func roomStart(roomID : String, completion: @escaping (Bool) -> Void){
     let roomRef = db.collection("room").document(roomID)
     var roomDeck = ""
     var players : [String] = []
@@ -235,8 +235,10 @@ func roomStart(roomID : String){
             dealToPlayer(playerID: currentPlayer, deckID: roomDeck) { result in
                 if result {
                     print("Deal success for player: \(currentPlayer)")
+                    completion(false)
                 } else {
                     print("Deal fail for player: \(currentPlayer)")
+                    completion(true)
                     return
                 }
                 
@@ -250,7 +252,6 @@ func roomStart(roomID : String){
         }
         
         dealNextPlayer() // 开始处理第一个玩家
-        roomRef.updateData(["isStart" : true])
         roomRef.updateData(["turn" : 0])
     }
 }
@@ -277,10 +278,25 @@ func dealToPlayer(playerID: String, deckID: String, completion: @escaping (Bool)
                 return
             }
             
+            
             player.appendCard(card: card!)
+            var cardsData: [[String: Int]] = []
+            for i in player.deck{
+                print("there: ", i.suit, i.rank)
+                let cardData: [String: Int] = [
+                    "suit": i.suit.rawValue,
+                    "rank": i.rank.rawValue
+                ]
+                cardsData.append(cardData)
+            }
             
             do {
-                try playerRef.setData(from: player)
+                playerRef.setData([
+                    "playerID": player.playerID,
+                    "roomID": player.roomID,
+                    "deckID": player.deckID,
+                    "deck" : cardsData
+                ])
                 completion(true) // 处理成功获取卡牌的情况
             } catch {
                 print("Error updating player document:", error)
@@ -363,12 +379,24 @@ func nextPlayer(roomID : String){
               snapshot.exists,
               var room = try? snapshot.data(as : Room.self) else { return }
         room.turn = (room.turn + 1) % room.players.count
-        
-        do{
-            try roomRef.setData(from: room)
-        } catch{
-            print(error)
+        let playerRef = db.collection("player").document(room.players[room.turn])
+        playerRef.getDocument { (snapshot, error) in
+            guard let snapshot,
+                  snapshot.exists,
+                  var player = try? snapshot.data(as : Player.self) else { return }
+
+            if(player.deck.count == 0){
+                nextPlayer(roomID: roomID)
+            }
+            do{
+                try roomRef.setData(from: room)
+            } catch{
+                print(error)
+            }
         }
+                                    
+        
+        
     }
 }
 

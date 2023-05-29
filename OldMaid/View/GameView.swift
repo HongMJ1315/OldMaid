@@ -31,35 +31,36 @@ struct GameView: View {
                     Group {
                         VStack {
                             HStack{
-
-                                if let nextNumber = viewModel.nextPlayerCardNumber {
-                                    ForEach((0..<nextNumber), id: \.self) { index in
-                                        CardView(card: Card(suit: Card.Suit.unknowMark, rank: Card.Rank.unknowMark))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 10)
-                                                    .stroke(Color.blue, lineWidth: 2)
-                                                    .opacity(chooseCard == index ? 1 : 0)
-                                            )
-                                            .onTapGesture {
-                                                
-                                                if(!viewModel.isChoosed!){
-                                                    chooseCard = -1
-                                                    return
-                                                }
-                                                if(chooseCard == index && viewModel.isChoosed!){
-                                                    print("chooseCard == index")
-                                                    dealCardFromPlayer(formPlayerID: viewModel.nextPlayerID, toPlayer: viewModel.player!, cardIndex: chooseCard){ result in
-                                                        self.dealFinish = result
-                                                        
+                                if let deck = viewModel.player?.deck {
+                                    if let nextNumber = viewModel.nextPlayerCardNumber {
+                                        ForEach((0..<nextNumber), id: \.self) { index in
+                                            CardView(card: Card(suit: Card.Suit.unknowMark, rank: Card.Rank.unknowMark))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 10)
+                                                        .stroke(Color.blue, lineWidth: 2)
+                                                        .opacity(chooseCard == index ? 1 : 0)
+                                                )
+                                                .onTapGesture {
+                                                    
+                                                    if(!viewModel.isChoosed!){
+                                                        chooseCard = -1
+                                                        return
                                                     }
-                                                    chooseCard = -1
-                                                    viewModel.isChoosed = false
-                                                    return
+                                                    if(chooseCard == index && viewModel.isChoosed!){
+                                                        print("chooseCard == index")
+                                                        dealCardFromPlayer(formPlayerID: viewModel.nextPlayerID, toPlayer: viewModel.player!, cardIndex: chooseCard){ result in
+                                                            self.dealFinish = result
+                                                            
+                                                        }
+                                                        chooseCard = -1
+                                                        viewModel.isChoosed = false
+                                                        return
+                                                    }
+                                                    chooseCard = index
+                                                    print(index)
                                                 }
-                                                chooseCard = index
-                                                print(index)
-                                            }
-                                        
+                                            
+                                        }
                                     }
                                 }
                             }
@@ -83,8 +84,8 @@ struct GameView: View {
                                     dealFinish = false
                                 }
                                 .disabled(!dealFinish )
-                                
-                                
+                                Text("Your Turn")
+                                    .opacity((dealFinish == true || viewModel.isChoosed ?? false) ? 1 : 0)
                             }
 
                             HStack {
@@ -119,10 +120,18 @@ struct GameView: View {
                                             .overlay{
                                                 RoundedRectangle(cornerRadius: 10)
                                                     .stroke(Color.red, lineWidth: 2)
-                                                    .opacity(tapCardIndex != -1 && deck[tapCardIndex].rank == card.rank && tapCardIndex != deck.firstIndex(where: { $0.id == card.id }) ? 1 : 0)
+                                                    .opacity(tapCardIndex != -1 && tapCardIndex < deck.count && deck[tapCardIndex].rank == card.rank && tapCardIndex != deck.firstIndex(where: { $0.id == card.id }) ? 1 : 0)
                                             }
                                     }
+                                    Text("Finish")
+                                        .opacity(viewModel.player?.deck.count == 0 ? 1 : 0)
                                 }
+                            }
+                            if let player = viewModel.player{
+                                Text(player.playerID)
+                            }
+                            if let room = viewModel {
+                                Text(room.nextPlayerID)
                             }
                         }
                     }
@@ -132,7 +141,6 @@ struct GameView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear {
             self.viewModel.setPlayerAndRoomID(playerID: playerID, roomID: roomID)
-
         }
     }
 }

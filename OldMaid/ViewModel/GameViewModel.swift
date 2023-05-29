@@ -12,11 +12,13 @@ class GameViewModel : ObservableObject {
     @Published var room : Room?
     var playerID: String = ""
     var roomID: String = ""
-    var nextPlayerID: String = ""
+    @Published var nextPlayerID: String = ""
     @Published var nextPlayerCardNumber : Int?
     @Published var playerIndex : Int?
     @Published var nowTurn : Int?
     @Published var isChoosed : Bool?
+    private var isObservingNextPlayer: Bool = false
+
     init(){
         playerID = ""
     }
@@ -24,20 +26,25 @@ class GameViewModel : ObservableObject {
         setPlayerID(playerID: playerID){ result in
             print("next player id:", result)
             self.nextPlayerID = result
-            self.observeNextPlayer(nextPlayerID: result )
-            self.setRoomID(roomID: roomID)
+            self.setRoomID(roomID: roomID){_ in 
+                self.observeNextPlayer()
+
+            }
             self.observePlayer()
             self.observeRoom()
+            self.observeNextPlayer()
         }
     }
     func setPlayerAndRoomID(playerID: String, roomID:String){
         setPlayerID(playerID: playerID){ result in
             print("next player id:", result)
             self.nextPlayerID = result
-            self.observeNextPlayer(nextPlayerID: result )
-            self.setRoomID(roomID: roomID)
+            self.setRoomID(roomID: roomID){_ in 
+                self.observeNextPlayer()
+            }
             self.observePlayer()
             self.observeRoom()
+            self.observeNextPlayer()
         }
     }
     func setPlayerID(playerID: String, completion: @escaping (String) -> Void){
@@ -67,7 +74,7 @@ class GameViewModel : ObservableObject {
             }
         }
     }
-    func setRoomID(roomID : String){
+    func setRoomID(roomID : String, completion: @escaping (String) -> Void){
         self.roomID = roomID
         let roomRef = db.collection("room").document(roomID)
         roomRef.getDocument { (document, error) in
@@ -95,17 +102,60 @@ class GameViewModel : ObservableObject {
         
         }
     }
-    func observeNextPlayer(nextPlayerID : String){
-        let cardRef = db.collection("player").document(nextPlayerID)
-        cardRef.addSnapshotListener { (documentSnapshot, error) in
-            guard let document = documentSnapshot else{
-                print("no document")
+    func observeNextPlayer() {
+            guard !isObservingNextPlayer else {
                 return
             }
-            let player = try? document.data(as : Player.self)
-            self.nextPlayerCardNumber = player!.deck.count
+
+            isObservingNextPlayer = true
+
+            print("Observe next player")
+            let cardRef = db.collection("player").document(nextPlayerID)
+            cardRef.addSnapshotListener { [weak self] documentSnapshot, error in
+                guard let self = self else {
+                    return
+                }
+            
+            guard let document = documentSnapshot, document.exists else {
+                print("No document")
+                return
+            }
+            
+            guard let player = try? document.data(as: Player.self) else {
+                print("Player is nil")
+                self.updateNextPlayerID()
+                return
+            }
+            
+            print("Next player ID: ", player.playerID, player.deck.count)
+            
+            if player.deck.isEmpty {
+                print("Next player card empty")
+                self.updateNextPlayerID()
+            } else {
+                self.nextPlayerCardNumber = player.deck.count
+            }
+            self.isObservingNextPlayer = false
+
         }
     }
+
+    private func updateNextPlayerID() {
+        guard let room = self.room else {
+            return
+        }
+        
+        guard let currentIndex = room.players.firstIndex(of: nextPlayerID) else {
+            return
+        }
+        
+        nextPlayerID = room.players[(currentIndex + 1) % room.players.count]
+        print("Next player ID: ", nextPlayerID)
+        let cardRef = db.collection("player").document(nextPlayerID)
+        print("Update cardRef")
+        observeNextPlayer()
+    }
+
     func observeRoom(){
         let roomRef = db.collection("room").document(roomID)
         roomRef.addSnapshotListener { (documentSnapshot, error) in

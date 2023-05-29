@@ -51,10 +51,14 @@ struct RoomView: View {
                                 }
 
                                 Button("Start Game"){
-                                    roomStart(roomID: roomID)
-                                    self.gameViewModel.setPlayerID(playerID : player.playerID){ result in
-                                        
+                                    roomStart(roomID: roomID){
+                                        result in
+                                        if(result){
+                                            viewModel.start()
+                                        }
+                                    
                                     }
+  
                                 }
                                 .disabled(room.players.count < 4 || room.hostPlayerID != player.playerID)
                                 

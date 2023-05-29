@@ -132,6 +132,7 @@ func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int, 
                 "deck" : cardsData
             ])
             cardsData = []
+            toPlayer.deck.append(tmpCard)
             for i in toPlayer.deck{
                 print("there: ", i.suit, i.rank)
                 let cardData: [String: Int] = [
@@ -140,7 +141,7 @@ func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int, 
                 ]
                 cardsData.append(cardData)
             }
-            toPlayer.deck.append(tmpCard)
+            
             toPlayerRef.setData([
                 "playerID": toPlayer.playerID,
                 "roomID": toPlayer.roomID,

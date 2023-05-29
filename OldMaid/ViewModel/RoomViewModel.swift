@@ -67,4 +67,11 @@ class RoomViewModel: ObservableObject {
 
         return room.players.contains(playerID)
     }
+    
+    func start(){
+        let roomRef = Firestore.firestore().collection("room").document(roomID)
+        roomRef.updateData([
+            "isStart": true
+        ])
+    }
 }
