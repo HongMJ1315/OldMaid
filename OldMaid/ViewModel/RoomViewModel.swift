@@ -40,12 +40,9 @@ class RoomViewModel: ObservableObject {
 
             do {
                 self?.room = try snapshot.data(as: Room.self)
-                self?.objectWillChange.send() // 觸發發布更新
 
                 if let room = self!.room{
-                    for i in room.players{
-                        print(i)
-                    }
+                    print("\(room.isStart)")
                 }
             } catch {
                 // Failed to decode Room document

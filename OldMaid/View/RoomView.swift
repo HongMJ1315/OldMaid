@@ -15,7 +15,6 @@ struct RoomView: View {
             print("get room playerr number \(viewModel.room?.players.count)")
         }
     }
-    @StateObject var gameViewModel: GameViewModel = GameViewModel()
     @AppStorage("roomID") var roomID = "null"
     @Binding var isInRoom : Bool
     @Binding var player : Player
@@ -54,7 +53,11 @@ struct RoomView: View {
                                     roomStart(roomID: roomID){
                                         result in
                                         if(result){
-                                            viewModel.start()
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                                viewModel.start()
+                                                
+                                            }
+                                            
                                         }
                                     
                                     }

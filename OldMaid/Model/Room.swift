@@ -123,13 +123,11 @@ func isRoomNumberUnique(roomNumber: String) -> Bool {
 }
 
 func createRoom(player : Player) -> String{
-    print("\(player.playerID) create room")
     let deckID : String = createDeck()
     let roomRef = db.collection("room").document()
     let roomID = roomRef.documentID
     var roomNumber = getRoomNumber()
     let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [], hostPlayerID: player.playerID, isStart: false, turn: -1)
-    print("==============" + roomID + "================")
     do{
         try roomRef.setData(from : room)
 
@@ -139,7 +137,6 @@ func createRoom(player : Player) -> String{
     return roomID
 }
 func joinRoom(player: Player, roomID: String, completion: @escaping () -> Void) {
-    print("\(player.playerID) join room \(roomID)")
     let roomRef = db.collection("room").document(roomID)
     roomRef.getDocument { snapshot, error in
         guard let snapshot = snapshot, snapshot.exists, var room = try? snapshot.data(as: Room.self) else {
@@ -206,7 +203,6 @@ func joinRoomRandom(player: Player, completion: @escaping (Bool) -> Void) {
             if randomRoom.players.count >= 8 {
                 continue
             }
-            print("random room: " + randomRoom.roomID + " " + player.playerID)
             joinRoom(player: player, roomID: randomRoom.roomID){
                 completion(true)
             }
@@ -257,7 +253,6 @@ func roomStart(roomID : String, completion: @escaping (Bool) -> Void){
 }
 func dealToPlayer(playerID: String, deckID: String, completion: @escaping (Bool) -> Void) {
     let playerRef = db.collection("player").document(playerID)
-    print(playerID, deckID)
     playerRef.getDocument { (snapshot, error) in
         if let error = error {
             print("Error getting player document:", error)
@@ -282,7 +277,6 @@ func dealToPlayer(playerID: String, deckID: String, completion: @escaping (Bool)
             player.appendCard(card: card!)
             var cardsData: [[String: Int]] = []
             for i in player.deck{
-                print("there: ", i.suit, i.rank)
                 let cardData: [String: Int] = [
                     "suit": i.suit.rawValue,
                     "rank": i.rank.rawValue
@@ -322,7 +316,6 @@ func getRoomDeckID(roomID: String, completion: @escaping (String) -> Void) {
 
 func quitRoom(player : Player){
     let roomRef = db.collection("room").document(player.roomID)
-    print("\(player.playerID) quit room \(player.roomID)")
     
     roomRef.getDocument { (snapshot, error) in
         guard let snapshot,

@@ -34,6 +34,7 @@ struct LobbyView: View {
                             Text(player.playerID)
                             Button("Join room random"){
                                 print(playerID, player.roomID)
+                                resetPlayer(player: player)
                                 joinRoomRandom(player: player){ result in
 
                                     roomID = player.roomID
@@ -48,6 +49,7 @@ struct LobbyView: View {
                                 }
                             }
                             Button("Create Room"){
+                                resetPlayer(player: player)
                                 joinRoom(player:player, roomID:createRoom(player:player)){
                                     roomID = player.roomID
                                     isInRoom = true

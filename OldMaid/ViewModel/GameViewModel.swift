@@ -18,29 +18,17 @@ class GameViewModel : ObservableObject {
     @Published var nowTurn : Int?
     @Published var isChoosed : Bool?
     private var isObservingNextPlayer: Bool = false
-
+    var justForRemoveMagicBug : Bool = false
     init(){
+        print("Call init")
         playerID = ""
     }
-    init(playerID: String, roomID:String){
-        setPlayerID(playerID: playerID){ result in
-            print("next player id:", result)
-            self.nextPlayerID = result
-            self.setRoomID(roomID: roomID){_ in 
-                self.observeNextPlayer()
-
-            }
-            self.observePlayer()
-            self.observeRoom()
-            self.observeNextPlayer()
-        }
-    }
     func setPlayerAndRoomID(playerID: String, roomID:String){
+        print("Call set Player and Room ID")
         setPlayerID(playerID: playerID){ result in
-            print("next player id:", result)
+
             self.nextPlayerID = result
             self.setRoomID(roomID: roomID){_ in 
-                self.observeNextPlayer()
             }
             self.observePlayer()
             self.observeRoom()
@@ -75,6 +63,7 @@ class GameViewModel : ObservableObject {
         }
     }
     func setRoomID(roomID : String, completion: @escaping (String) -> Void){
+        print("set Room ID")
         self.roomID = roomID
         let roomRef = db.collection("room").document(roomID)
         roomRef.getDocument { (document, error) in
@@ -92,6 +81,8 @@ class GameViewModel : ObservableObject {
         }
     }
     func observePlayer(){
+        print("Observe player")
+        
         let cardRef = db.collection("player").document(playerID)
         cardRef.addSnapshotListener { (documentSnapshot, error) in
             guard let document = documentSnapshot else{
@@ -103,13 +94,14 @@ class GameViewModel : ObservableObject {
         }
     }
     func observeNextPlayer() {
+        
             guard !isObservingNextPlayer else {
                 return
             }
 
             isObservingNextPlayer = true
 
-            print("Observe next player")
+            print("Observe next player \(nextPlayerID)")
             let cardRef = db.collection("player").document(nextPlayerID)
             cardRef.addSnapshotListener { [weak self] documentSnapshot, error in
                 guard let self = self else {
@@ -129,10 +121,11 @@ class GameViewModel : ObservableObject {
             
             print("Next player ID: ", player.playerID, player.deck.count)
             
-            if player.deck.isEmpty {
+            if (player.deck.isEmpty && self.justForRemoveMagicBug){
                 print("Next player card empty")
                 self.updateNextPlayerID()
             } else {
+                self.justForRemoveMagicBug = true
                 self.nextPlayerCardNumber = player.deck.count
             }
             self.isObservingNextPlayer = false

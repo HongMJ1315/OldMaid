@@ -41,7 +41,6 @@ class Player: ObservableObject, Codable {
         self.roomID = roomID
         let playerRef = db.collection("player").document(playerID)
         self.playerID = playerID
-        print(roomID, playerID)
         playerRef.getDocument { (document, error) in
             guard let document = document, document.exists else{
                 return
@@ -118,7 +117,6 @@ func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int, 
             formPlayer.deck.remove(at: cardIndex)
             var cardsData: [[String: Int]] = []
             for i in formPlayer.deck{
-                print("there: ", i.suit, i.rank)
                 let cardData: [String: Int] = [
                     "suit": i.suit.rawValue,
                     "rank": i.rank.rawValue
@@ -134,7 +132,6 @@ func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int, 
             cardsData = []
             toPlayer.deck.append(tmpCard)
             for i in toPlayer.deck{
-                print("there: ", i.suit, i.rank)
                 let cardData: [String: Int] = [
                     "suit": i.suit.rawValue,
                     "rank": i.rank.rawValue
@@ -161,7 +158,6 @@ func playerCardShuffle(player:Player){
     player.deck.shuffle()
     var cardsData: [[String: Int]] = []
     for i in player.deck{
-        print("there: ", i.suit, i.rank)
         let cardData: [String: Int] = [
             "suit": i.suit.rawValue,
             "rank": i.rank.rawValue
