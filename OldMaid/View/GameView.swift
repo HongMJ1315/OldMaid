@@ -36,7 +36,7 @@ struct GameView: View {
                             
                     }
                     .frame(width: geometry.size.width, height: geometry.size.height)
-                    .opacity(viewModel.player?.deck.count == 0 || self.nextPlayerID == self.playerID ? 1 : 0)
+                    .opacity((viewModel.player?.deck.count == 0 || viewModel.nextPlayerID == viewModel.playerID) ? 1 : 0)
                     .zIndex(3)
                     Group {
                         VStack {
