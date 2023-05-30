@@ -22,6 +22,7 @@ struct Room: Codable, Identifiable {
     var abandonCard: [Card] = []
     var isStart: Bool
     var turn: Int
+    var rank: Int
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -33,9 +34,10 @@ struct Room: Codable, Identifiable {
         case abandonCard
         case isStart
         case turn
+        case rank
     }
 
-    init(id: String? = nil, deckID: String, roomID: String, roomNumber: String, players: [String], hostPlayerID: String, abandonCard: [Card] = [], isStart: Bool, turn : Int) {
+    init(id: String? = nil, deckID: String, roomID: String, roomNumber: String, players: [String], hostPlayerID: String, abandonCard: [Card] = [], isStart: Bool, turn : Int, rank : Int) {
         self.id = id
         self.deckID = deckID
         self.roomID = roomID
@@ -45,6 +47,7 @@ struct Room: Codable, Identifiable {
         self.abandonCard = abandonCard
         self.isStart = isStart
         self.turn = turn
+        self.rank = rank
     }
 
     init(from decoder: Decoder) throws {
@@ -58,6 +61,7 @@ struct Room: Codable, Identifiable {
         abandonCard = try container.decode([Card].self, forKey: .abandonCard)
         isStart = try container.decode(Bool.self, forKey: .isStart)
         turn = try container.decode(Int.self, forKey: .turn)
+        rank = try container.decode(Int.self, forKey: .rank)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -71,6 +75,7 @@ struct Room: Codable, Identifiable {
         try container.encode(abandonCard, forKey: .abandonCard)
         try container.encode(isStart, forKey: .isStart)
         try container.encode(turn, forKey: .turn)
+        try container.encode(rank, forKey: .rank)
     }
 }
 
@@ -127,7 +132,7 @@ func createRoom(player : Player) -> String{
     let roomRef = db.collection("room").document()
     let roomID = roomRef.documentID
     var roomNumber = getRoomNumber()
-    let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [], hostPlayerID: player.playerID, isStart: false, turn: -1)
+    let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [], hostPlayerID: player.playerID, isStart: false, turn: -1, rank: 0)
     do{
         try roomRef.setData(from : room)
 
@@ -222,7 +227,7 @@ func roomStart(roomID : String, completion: @escaping (Bool) -> Void){
               let room = try? snapshot.data(as : Room.self) else { return }
         players = room.players
         roomDeck = room.deckID
-     
+        print("room deck id is \(roomDeck)")
         var currentPlayerIndex = 0
                 
         func dealNextPlayer() {
@@ -249,6 +254,7 @@ func roomStart(roomID : String, completion: @escaping (Bool) -> Void){
         
         dealNextPlayer() // 开始处理第一个玩家
         roomRef.updateData(["turn" : 0])
+        roomRef.updateData(["rank" : players.count - 1])
     }
 }
 func dealToPlayer(playerID: String, deckID: String, completion: @escaping (Bool) -> Void) {
@@ -326,10 +332,10 @@ func quitRoom(player : Player){
         player.deckID = ""
         let playerRef = db.collection("player").document(player.playerID)
         try? playerRef.setData(from: player)
-//        if(room.hostPlayerID == player.playerID || room.players.count == 0){
-//            roomRef.delete()
-//            return
-//        }
+        if(room.hostPlayerID == player.playerID || room.players.count == 0){
+            roomRef.delete()
+            return
+        }
         
         do {
             try roomRef.setData(from: room)
@@ -387,12 +393,18 @@ func nextPlayer(roomID : String){
                 print(error)
             }
         }
-                                    
-        
-        
     }
 }
-
+func updateRank(roomID : String, completion: @escaping (Int) -> Void){
+    let roomRef = db.collection("room").document(roomID)
+    roomRef.getDocument { (snapshot, error) in
+        guard let snapshot,
+              snapshot.exists,
+              var room = try? snapshot.data(as : Room.self) else { return }
+        roomRef.updateData(["rank": room.rank - 1])
+        completion(room.rank)
+    }
+}
 
 //-------------
 //Test

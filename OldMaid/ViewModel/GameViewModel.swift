@@ -17,6 +17,7 @@ class GameViewModel : ObservableObject {
     @Published var playerIndex : Int?
     @Published var nowTurn : Int?
     @Published var isChoosed : Bool?
+    @Published var yourRank : Int?
     private var isObservingNextPlayer: Bool = false
     var justForRemoveMagicBug : Bool = false
     init(){
@@ -90,7 +91,13 @@ class GameViewModel : ObservableObject {
                 return
             }
             self.player = try? document.data(as : Player.self)
-        
+            if(self.player?.deck.count == 0){
+                print("Player card empty")
+                
+                updateRank(roomID: self.roomID){ rank in
+                    self.yourRank = rank
+                }
+            }
         }
     }
     func observeNextPlayer() {
@@ -121,8 +128,14 @@ class GameViewModel : ObservableObject {
             
             print("Next player ID: ", player.playerID, player.deck.count)
             
+            if(self.nextPlayerID == self.playerID){
+                print("Next player is me")
+                self.yourRank = 0
+                return
+            }
             if (player.deck.isEmpty && self.justForRemoveMagicBug){
                 print("Next player card empty")
+                self.justForRemoveMagicBug = false
                 self.updateNextPlayerID()
             } else {
                 self.justForRemoveMagicBug = true

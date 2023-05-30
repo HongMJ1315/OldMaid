@@ -28,6 +28,16 @@ struct GameView: View {
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .opacity(geometry.size.width < geometry.size.height ? 1 : 0)
                     .zIndex(4)
+                    VStack{
+                        Text("Finish")
+                        if let rank = viewModel.yourRank{
+                            Text("\(rank)")
+                        }
+                            
+                    }
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .opacity(viewModel.player?.deck.count == 0 || self.nextPlayerID == self.playerID ? 1 : 0)
+                    .zIndex(3)
                     Group {
                         VStack {
                             HStack{
