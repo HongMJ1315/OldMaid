@@ -24,10 +24,11 @@ class GameViewModel : ObservableObject {
         print("Call init")
         playerID = ""
     }
-    func setPlayerAndRoomID(playerID: String, roomID:String){
-        print("Call set Player and Room ID")
-        setPlayerID(playerID: playerID){ result in
-
+    func setPlayerAndRoomID(romoveBug: Bool, playerID: String, roomID:String){
+        print("Call set Player and Room ID \(romoveBug) \(playerID) \(roomID)")
+        justForRemoveMagicBug = romoveBug
+        
+        setPlayerID( playerID: playerID){ result in
             self.nextPlayerID = result
             self.setRoomID(roomID: roomID){_ in 
             }
@@ -39,11 +40,14 @@ class GameViewModel : ObservableObject {
     func setPlayerID(playerID: String, completion: @escaping (String) -> Void){
         self.playerID = playerID
         let playerRef = db.collection("player").document(playerID)
+        print("set Player ID \(playerID)")
+        
         playerRef.getDocument { (document, error) in
             guard let document = document, document.exists else{
                 return
             }
             self.player = try? document.data(as : Player.self)
+            print(self.player?.roomID)
             let roomRef = db.collection("room").document(self.player!.roomID)
             roomRef.getDocument { (document, error) in
                 guard let document = document, document.exists else{
@@ -93,20 +97,48 @@ class GameViewModel : ObservableObject {
             self.player = try? document.data(as : Player.self)
             if(self.player?.deck.count == 0){
                 print("Player card empty")
-                
-                updateRank(roomID: self.roomID){ rank in
-                    self.yourRank = rank
+                let roomRef = db.collection("room").document(self.roomID)
+
+                roomRef.getDocument { (documentSnapshot, error) in
+                    guard let document = documentSnapshot else {
+                        print("no document")
+                        return
+                    }
+                    
+                    let tmpRoom = try? document.data(as: Room.self)
+                    
+                    for i in tmpRoom?.gameResult.indices ?? 0..<0 {
+                        if tmpRoom?.gameResult[i] == self.playerID {
+                            self.yourRank = (tmpRoom?.players.count)! - i - 1
+                            print("Your rank: ", self.yourRank)
+                            
+                            return
+                        }
+                    }
+                    updateRank(roomID: self.roomID){ [self] rank in
+                        self.yourRank = rank
+                        updateGameResult(roomID: self.roomID, playerID: self.playerID)
+                        for i in tmpRoom?.players.indices ?? 0..<0{
+                            if(tmpRoom?.players[i] == player?.playerID && i == tmpRoom?.turn){
+                                
+                                nextPlayer(roomID: self.roomID)
+                                
+                            }
+                        }
+                    }
                 }
+                
+                
             }
         }
     }
     func observeNextPlayer() {
         
-            guard !isObservingNextPlayer else {
-                return
-            }
-
-            isObservingNextPlayer = true
+//            guard !isObservingNextPlayer else {
+//                return
+//            }
+//
+//            isObservingNextPlayer = true
 
             print("Observe next player \(nextPlayerID)")
             let cardRef = db.collection("player").document(nextPlayerID)
@@ -126,22 +158,25 @@ class GameViewModel : ObservableObject {
                 return
             }
             
-            print("Next player ID: ", player.playerID, player.deck.count)
+                print("Next player ID: ", player.playerID, player.deck.count, self.justForRemoveMagicBug)
             
             if(self.nextPlayerID == self.playerID){
                 print("Next player is me")
                 self.yourRank = 0
                 return
             }
-            if (player.deck.isEmpty && self.justForRemoveMagicBug){
-                print("Next player card empty")
-                self.justForRemoveMagicBug = false
-                self.updateNextPlayerID()
-            } else {
+            if (!self.justForRemoveMagicBug){
+                print("Next player card empty bruh")
                 self.justForRemoveMagicBug = true
+            }
+            else if(player.deck.isEmpty){
+                print("Next player card empty")
+                self.updateNextPlayerID()
+            }
+            else{
                 self.nextPlayerCardNumber = player.deck.count
             }
-            self.isObservingNextPlayer = false
+//            self.isObservingNextPlayer = false
 
         }
     }

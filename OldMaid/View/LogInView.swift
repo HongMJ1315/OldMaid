@@ -115,6 +115,7 @@ struct SignUpView : View{
 //
                     VStack{
                         Spacer()
+                        Text(playerID)
                         HStack{
                             TextField("Email", text: $email)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())

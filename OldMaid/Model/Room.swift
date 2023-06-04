@@ -23,6 +23,8 @@ struct Room: Codable, Identifiable {
     var isStart: Bool
     var turn: Int
     var rank: Int
+    var gameResult:[String]=[]
+    var startTime: String
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -35,9 +37,11 @@ struct Room: Codable, Identifiable {
         case isStart
         case turn
         case rank
+        case gameResult
+        case startTime
     }
 
-    init(id: String? = nil, deckID: String, roomID: String, roomNumber: String, players: [String], hostPlayerID: String, abandonCard: [Card] = [], isStart: Bool, turn : Int, rank : Int) {
+    init(id: String? = nil, deckID: String, roomID: String, roomNumber: String, players: [String], hostPlayerID: String, abandonCard: [Card] = [], isStart: Bool, turn : Int, rank : Int, gameResult: [String], startTime: String) {
         self.id = id
         self.deckID = deckID
         self.roomID = roomID
@@ -48,6 +52,8 @@ struct Room: Codable, Identifiable {
         self.isStart = isStart
         self.turn = turn
         self.rank = rank
+        self.gameResult = gameResult
+        self.startTime = startTime
     }
 
     init(from decoder: Decoder) throws {
@@ -62,6 +68,10 @@ struct Room: Codable, Identifiable {
         isStart = try container.decode(Bool.self, forKey: .isStart)
         turn = try container.decode(Int.self, forKey: .turn)
         rank = try container.decode(Int.self, forKey: .rank)
+        gameResult = try container.decode([String].self, forKey: .gameResult)
+        startTime = try container.decode(String.self, forKey: .startTime)
+    
+    
     }
 
     func encode(to encoder: Encoder) throws {
@@ -76,6 +86,8 @@ struct Room: Codable, Identifiable {
         try container.encode(isStart, forKey: .isStart)
         try container.encode(turn, forKey: .turn)
         try container.encode(rank, forKey: .rank)
+        try container.encode(gameResult, forKey: .gameResult)
+        try container.encode(startTime, forKey: .startTime)
     }
 }
 
@@ -132,7 +144,7 @@ func createRoom(player : Player) -> String{
     let roomRef = db.collection("room").document()
     let roomID = roomRef.documentID
     var roomNumber = getRoomNumber()
-    let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [], hostPlayerID: player.playerID, isStart: false, turn: -1, rank: 0)
+    let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [], hostPlayerID: player.playerID, isStart: false, turn: -1, rank: 0, gameResult: [], startTime: "")
     do{
         try roomRef.setData(from : room)
 
@@ -255,6 +267,7 @@ func roomStart(roomID : String, completion: @escaping (Bool) -> Void){
         dealNextPlayer() // 开始处理第一个玩家
         roomRef.updateData(["turn" : 0])
         roomRef.updateData(["rank" : players.count - 1])
+        roomRef.updateData(["startTime" : "\(Date())"])
     }
 }
 func dealToPlayer(playerID: String, deckID: String, completion: @escaping (Bool) -> Void) {
@@ -280,7 +293,7 @@ func dealToPlayer(playerID: String, deckID: String, completion: @escaping (Bool)
             }
             
             
-            player.appendCard(card: card!)
+            player.deck.append(card!)
             var cardsData: [[String: Int]] = []
             for i in player.deck{
                 let cardData: [String: Int] = [
@@ -291,10 +304,7 @@ func dealToPlayer(playerID: String, deckID: String, completion: @escaping (Bool)
             }
             
             do {
-                playerRef.setData([
-                    "playerID": player.playerID,
-                    "roomID": player.roomID,
-                    "deckID": player.deckID,
+                playerRef.updateData([
                     "deck" : cardsData
                 ])
                 completion(true) // 处理成功获取卡牌的情况
@@ -333,7 +343,13 @@ func quitRoom(player : Player){
         let playerRef = db.collection("player").document(player.playerID)
         try? playerRef.setData(from: player)
         if(room.hostPlayerID == player.playerID || room.players.count == 0){
-            roomRef.delete()
+            if(room.isStart == true){
+                updatePlayerGameResult(playerID: room.players, result: room.gameResult, startTime: room.startTime){
+                }
+            }
+            else{
+                roomRef.delete()
+            }
             return
         }
         
@@ -405,6 +421,44 @@ func updateRank(roomID : String, completion: @escaping (Int) -> Void){
         completion(room.rank)
     }
 }
+
+func updateGameResult(roomID: String, playerID : String){
+    print("update \(roomID) \(playerID)")
+    let roomRef = db.collection("room").document(roomID)
+    roomRef.getDocument { (snapshot, error) in
+        guard let snapshot,
+              snapshot.exists,
+              var room = try? snapshot.data(as : Room.self) else { return }
+        
+        room.gameResult.append(playerID)
+        
+        do{
+            try roomRef.setData(from: room)
+        } catch{
+            print(error)
+        }
+    }
+}
+
+func updatePlayerGameResult(playerID: [String], result: [String], startTime: String, completion: @escaping () -> Void) {
+    for i in playerID {
+        let playerRef = db.collection("player").document(i)
+        playerRef.getDocument { (snapshot, error) in
+            guard let snapshot,
+                  snapshot.exists,
+                  var player = try? snapshot.data(as: Player.self) else { return }
+            
+            // 更新player的gameHistory字典
+            player.gameHistory[startTime] = result
+            
+            // 将更新后的player保存回数据库
+            try? playerRef.setData(from: player)
+        }
+    }
+    
+    completion()
+}
+
 
 //-------------
 //Test

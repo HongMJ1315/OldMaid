@@ -13,10 +13,12 @@ class LogInViewModel: ObservableObject{
     @Published var user : Player? = nil
     
     init(){
+        print("init")
         Auth.auth().addStateDidChangeListener { auth, user in
             guard let userData = user else {
                 return
             }
+            print(userData.uid)
             self.user = Player(playerID: userData.uid)
         }
     }
@@ -48,13 +50,13 @@ class LogInViewModel: ObservableObject{
         })
     }
     func logIn(email: String, password: String, completion: @escaping (Bool)->Void){
+        print("log in")
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
             guard let userData = result?.user, error == nil else {
                 print(error?.localizedDescription)
                 completion(false)
                 return
             }
-            self.user = Player(playerID: userData.uid)
             let playerRef = db.collection("player").document(userData.uid)
             //set roomID
             playerRef.getDocument { (document, error) in
@@ -62,12 +64,15 @@ class LogInViewModel: ObservableObject{
                     print("document not exist")
                     return
                 }
-                let player = try? document.data(as : Player.self)
-                if(player!.roomID == ""){
-                    playerRef.updateData(["roomID" : ""])
+                do{
+                    let player = try document.data(as : Player.self)
+                    if(player.roomID == ""){
+                        playerRef.updateData(["roomID" : ""])
+                    }
+                    print("roomID: \(player.roomID)")
+                } catch{
+                    print(error)
                 }
-                print("roomID: \(player!.roomID)")
-            
             }
             
             completion(true)

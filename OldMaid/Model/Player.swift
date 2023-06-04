@@ -13,9 +13,10 @@ class Player: ObservableObject, Codable {
     @Published var roomID: String = ""
     @Published var deckID: String = ""
     @Published var deck: [Card] = []
+    @Published var gameHistory: [String: [String]] = [:]
     
     enum CodingKeys: String, CodingKey {
-        case playerID, roomID, deckID, deck
+        case playerID, roomID, deckID, deck, gameHistory
     }
     init() {
         self.playerID = "null"
@@ -29,7 +30,8 @@ class Player: ObservableObject, Codable {
             "playerID": playerID,
             "roomID": roomID,
             "deckID": deckID,
-            "deck" : deck
+            "deck" : deck,
+            "gameHistory" : []
         ])
     }
     init(playerID : String, roomID : String) {
@@ -49,7 +51,7 @@ class Player: ObservableObject, Codable {
             if let player = try? document.data(as : Player.self){
                 self.deck = player.deck
                 self.deckID = player.deckID
-            
+                self.gameHistory = player.gameHistory
             }
                
             
@@ -66,8 +68,8 @@ class Player: ObservableObject, Codable {
                 "playerID": playerID,
                 "roomID": roomID,
                 "deckID": self.deckID,
-                "deck" : cardsData
-            
+                "deck" : cardsData,
+                "gameHistory" : self.gameHistory
             ])
         }
     }
@@ -75,17 +77,11 @@ class Player: ObservableObject, Codable {
     func setRoomID(roomID: String) {
         self.roomID = roomID
         let playerRef = db.collection("player").document(playerID)
-        playerRef.setData([
-            "playerID": playerID,
-            "roomID": roomID,
-            "deckID": deckID,
-            "deck" : deck
-        ])
+        playerRef.updateData(["roomID": roomID])
     }
+
     
-    func appendCard(card: Card) {
-        deck.append(card)
-    }
+
     
     
     
@@ -95,6 +91,8 @@ class Player: ObservableObject, Codable {
         roomID = try container.decode(String.self, forKey: .roomID)
         deckID = try container.decode(String.self, forKey: .deckID)
         deck = try container.decode([Card].self, forKey: .deck)
+        gameHistory = try container.decode([String: [String]].self, forKey: .gameHistory)
+    
     }
     
     func encode(to encoder: Encoder) throws {
@@ -103,6 +101,7 @@ class Player: ObservableObject, Codable {
         try container.encode(roomID, forKey: .roomID)
         try container.encode(deckID, forKey: .deckID)
         try container.encode(deck, forKey: .deck)
+        try container.encode(gameHistory, forKey: .gameHistory)
     }
 }
 
@@ -123,10 +122,7 @@ func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int, 
                 ]
                 cardsData.append(cardData)
             }
-            formPlayerRef.setData([
-                "playerID": formPlayer.playerID,
-                "roomID": formPlayer.roomID,
-                "deckID": formPlayer.deckID,
+            formPlayerRef.updateData([
                 "deck" : cardsData
             ])
             cardsData = []
@@ -139,10 +135,7 @@ func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int, 
                 cardsData.append(cardData)
             }
             
-            toPlayerRef.setData([
-                "playerID": toPlayer.playerID,
-                "roomID": toPlayer.roomID,
-                "deckID": toPlayer.deckID,
+            toPlayerRef.updateData([
                 "deck" : cardsData
             ])
             completion(true)
@@ -165,12 +158,8 @@ func playerCardShuffle(player:Player){
         cardsData.append(cardData)
     }
     
-    db.collection("player").document(player.playerID).setData([
-        "playerID": player.playerID,
-        "roomID": player.roomID,
-        "deckID": player.deckID,
-        "deck" : cardsData
-    ])
+    db.collection("player").document(player.playerID).updateData(["deck": cardsData])
+   
 }
 func abandonCardFromPlayer(formPlayer: Player, firstCardIndex: Int, secondCardIndex: Int, roomID: String){
     let tmpCard = formPlayer.deck[firstCardIndex]
@@ -190,10 +179,7 @@ func abandonCardFromPlayer(formPlayer: Player, firstCardIndex: Int, secondCardIn
         ]
         cardsData.append(cardData)
     }
-    db.collection("player").document(formPlayer.playerID).setData([
-        "playerID": formPlayer.playerID,
-        "roomID": formPlayer.roomID,
-        "deckID": formPlayer.deckID,
+    db.collection("player").document(formPlayer.playerID).updateData([
         "deck" : cardsData
     ])
     let roomRef = db.collection("room").document(roomID)
@@ -227,11 +213,9 @@ func abandonCardFromPlayer(formPlayer: Player, firstCardIndex: Int, secondCardIn
 }
 
 func resetPlayer(player : Player){
-    db.collection("player").document(player.playerID).setData([
-        "playerID": player.playerID,
-        "roomID": "",
-        "deckID": "",
-        "deck" : []
-    ])
+    db.collection("player").document(player.playerID).updateData(["playerID": player.playerID])
+    db.collection("player").document(player.playerID).updateData(["roomID": ""])
+    db.collection("player").document(player.playerID).updateData(["deckID": ""])
+    db.collection("player").document(player.playerID).updateData(["deck": ""])
 }
 

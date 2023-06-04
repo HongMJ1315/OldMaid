@@ -11,7 +11,8 @@ import Firebase
 struct LobbyView: View {
     @AppStorage("playerID") var playerID = "null"
     @AppStorage("roomID") var roomID = "null"
-    
+    @AppStorage("firstInRoom") var firstInRoom = true
+
     @State var player : Player = Player()
     @State var isInRoom : Bool = false
     @Binding var isLogIn : Bool
@@ -33,6 +34,7 @@ struct LobbyView: View {
                         VStack{
                             Text(player.playerID)
                             Button("Join room random"){
+                                firstInRoom = true
                                 print(playerID, player.roomID)
                                 resetPlayer(player: player)
                                 joinRoomRandom(player: player){ result in
@@ -44,6 +46,7 @@ struct LobbyView: View {
                                 
                             }
                             Button("Joint room for room number"){
+                                firstInRoom = true
                                 joinRoomRandom(player: player){ result in
                                     isInRoom = true
                                 }
@@ -73,7 +76,7 @@ struct LobbyView: View {
                     .zIndex(3)
                     .background(
                         
-                        NavigationLink(destination: RoomView(player : $player, isInRoom : $isInRoom), isActive: $isInRoom) { Text(":(") }
+                        NavigationLink(destination: RoomView(player : $player, isInRoom : $isInRoom), isActive: $isInRoom) { EmptyView() }
                         
                     )
                 }

@@ -9,6 +9,7 @@ import SwiftUI
 import FirebaseFirestoreSwift
 
 struct RoomView: View {
+    @AppStorage("firstInRoom") var firstInRoom = true
     @StateObject var viewModel: RoomViewModel = RoomViewModel(){
         willSet {
 //            self.objectWillChange.send()
@@ -50,6 +51,7 @@ struct RoomView: View {
                                 }
 
                                 Button("Start Game"){
+                                    
                                     roomStart(roomID: roomID){
                                         result in
                                         if(result){
@@ -92,7 +94,7 @@ struct RoomView: View {
                 .zIndex(3)
                 .background{
                     if let room = viewModel.room{
-                        NavigationLink(destination: GameView(), isActive: room.isStart ? .constant(true) : .constant(false)) {
+                        NavigationLink(destination: GameView(isInRoom: $isInRoom), isActive: room.isStart ? .constant(true) : .constant(false)) {
                             EmptyView()
                         }
                     }
@@ -103,7 +105,7 @@ struct RoomView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear{
-            
+//            self.firstInRoom = false
             self.viewModel.setRoomID(roomID: roomID)
             checkRoomIlliberal(roomID: roomID) { result in
                 isInRoom = result
