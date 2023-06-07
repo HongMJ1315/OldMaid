@@ -90,7 +90,19 @@ class Player: ObservableObject, Codable {
         playerID = try container.decode(String.self, forKey: .playerID)
         roomID = try container.decode(String.self, forKey: .roomID)
         deckID = try container.decode(String.self, forKey: .deckID)
-        deck = try container.decode([Card].self, forKey: .deck)
+
+        if let cardsData = try container.decodeIfPresent([[String: Int]].self, forKey: .deck) {
+            deck = cardsData.compactMap { cardData in
+                if let suitValue = cardData["suit"], let rankValue = cardData["rank"],
+                    let suit = Card.Suit(rawValue: suitValue), let rank = Card.Rank(rawValue: rankValue) {
+                    return Card(suit: suit, rank: rank)
+                }
+                return nil
+            }
+        } else {
+            deck = []
+        }
+
         gameHistory = try container.decode([String: [String]].self, forKey: .gameHistory)
     
     }

@@ -146,39 +146,40 @@ class GameViewModel : ObservableObject {
                 guard let self = self else {
                     return
                 }
-            
-            guard let document = documentSnapshot, document.exists else {
-                print("No document")
-                return
-            }
-            
-            guard let player = try? document.data(as: Player.self) else {
-                print("Player is nil")
-                self.updateNextPlayerID()
-                return
-            }
-            
-                print("Next player ID: ", player.playerID, player.deck.count, self.justForRemoveMagicBug)
-            
-            if(self.nextPlayerID == self.playerID){
-                print("Next player is me")
-                self.yourRank = 0
-                return
-            }
-            if (!self.justForRemoveMagicBug){
-                print("Next player card empty bruh")
-                self.justForRemoveMagicBug = true
-            }
-            else if(player.deck.isEmpty){
-                print("Next player card empty")
-                self.updateNextPlayerID()
-            }
-            else{
-                self.nextPlayerCardNumber = player.deck.count
-            }
-//            self.isObservingNextPlayer = false
+                
+                guard let document = documentSnapshot, document.exists else {
+                    print("No document")
+                    return
+                }
+                
+                var player : Player?
+                do{
+                    let tplayer = try document.data(as: Player.self)
+                    player = tplayer
+                } catch {
+                    print("Player Data Error")
+                    print(error)
+                    return
+                }
+                
+                
+                print("Next player ID: ", player!.playerID, player!.deck.count, self.justForRemoveMagicBug)
+                
+                if(self.nextPlayerID == self.playerID){
+                    print("Next player is me")
+                    self.yourRank = 0
+                    return
+                }
+                if (player!.deck.isEmpty && self.justForRemoveMagicBug){
+                    print("Next player card empty")
+                    self.updateNextPlayerID()
+                } else {
+                    self.justForRemoveMagicBug = true
+                    self.nextPlayerCardNumber = player!.deck.count
+                }
+    //            self.isObservingNextPlayer = false
 
-        }
+            }
     }
 
     private func updateNextPlayerID() {

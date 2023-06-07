@@ -50,6 +50,25 @@ struct Card: Comparable, Codable, Identifiable, Hashable {
         case king
         case unknowMark
     }
+    // Custom decoding logic
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let suitRawValue = try container.decode(Int.self, forKey: .suit)
+        let rankRawValue = try container.decode(Int.self, forKey: .rank)
+
+        guard let suit = Suit(rawValue: suitRawValue), let rank = Rank(rawValue: rankRawValue) else {
+            throw DecodingError.dataCorruptedError(forKey: .suit, in: container, debugDescription: "Invalid suit or rank")
+        }
+
+        self.suit = suit
+        self.rank = rank
+    }
+    
+    init (suit: Suit, rank: Rank) {
+        self.suit = suit
+        self.rank = rank
+    }
+    
 }
 
 
