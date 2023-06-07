@@ -31,7 +31,7 @@ class Player: ObservableObject, Codable {
             "roomID": roomID,
             "deckID": deckID,
             "deck" : deck,
-            "gameHistory" : []
+            "gameHistory" : [:]
         ])
     }
     init(playerID : String, roomID : String) {
@@ -228,6 +228,6 @@ func resetPlayer(player : Player){
     db.collection("player").document(player.playerID).updateData(["playerID": player.playerID])
     db.collection("player").document(player.playerID).updateData(["roomID": ""])
     db.collection("player").document(player.playerID).updateData(["deckID": ""])
-    db.collection("player").document(player.playerID).updateData(["deck": ""])
+    db.collection("player").document(player.playerID).updateData(["deck": [Card]()])
 }
 

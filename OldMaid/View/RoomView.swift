@@ -20,6 +20,7 @@ struct RoomView: View {
     @Binding var isInRoom : Bool
     @Binding var player : Player
     @State var isStart : Bool = false
+    @State var gameView: GameView?
     init(player : Binding<Player>, isInRoom: Binding<Bool>) {
         _isInRoom = isInRoom
         _player = player
@@ -55,7 +56,7 @@ struct RoomView: View {
                                     roomStart(roomID: roomID){
                                         result in
                                         if(result){
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                                                 viewModel.start()
                                                 
                                             }
@@ -83,6 +84,8 @@ struct RoomView: View {
                                     isInRoom = false
                                     roomID = "null"
                                     resetPlayer(player: player)
+                                    gameView!.reset()
+                                
                                 }
                             
                             }
@@ -94,11 +97,10 @@ struct RoomView: View {
                 .zIndex(3)
                 .background{
                     if let room = viewModel.room{
-                        NavigationLink(destination: GameView(isInRoom: $isInRoom), isActive: room.isStart ? .constant(true) : .constant(false)) {
+                        NavigationLink(destination: gameView, isActive: room.isStart ? .constant(true) : .constant(false)) {
                             EmptyView()
                         }
                     }
-
                 }
             }
             
@@ -106,6 +108,8 @@ struct RoomView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear{
 //            self.firstInRoom = false
+            self.gameView = GameView(isInRoom: $isInRoom)
+            print("run roomView onAppear")
             self.viewModel.setRoomID(roomID: roomID)
             checkRoomIlliberal(roomID: roomID) { result in
                 isInRoom = result
@@ -120,6 +124,7 @@ struct RoomView: View {
             checkRoomIsStart(roomID: roomID) { result in
                 isStart = result
             }
+            
             
         }
         

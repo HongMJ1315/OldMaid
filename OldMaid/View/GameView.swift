@@ -23,6 +23,9 @@ struct GameView: View {
     init(isInRoom: Binding<Bool>) {
         _isInRoom = isInRoom
     }
+    func reset(){
+        viewModel.reset()
+    }
     var body: some View {
         NavigationView{
             GeometryReader{ geometry in
@@ -172,8 +175,17 @@ struct GameView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
+            firstInRoom = true
             self.viewModel.setPlayerAndRoomID(romoveBug: !firstInRoom, playerID: playerID, roomID: roomID)
-            firstInRoom = false
+            firstInRoom = true
+        }
+        .onDisappear {
+            if !isInRoom{
+                // 在非活动状态下执行清理操作
+                self.viewModel.reset()
+            
+            
+            }
         }
     }
 }
