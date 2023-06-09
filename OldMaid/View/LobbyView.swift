@@ -86,6 +86,7 @@ struct LobbyView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear {
             self.player.setPlayerInfo(playerID: playerID, roomID: roomID)
+            print("player ID : \(playerID)")
             print("roomID: ", player.roomID)
             if !(roomID == "null" || roomID == ""){
                 isInRoom = true

@@ -12,6 +12,7 @@ struct GameView: View {
     @AppStorage("playerID") var playerID = "null"
     @AppStorage("roomID") var roomID = "null"
     @AppStorage("firstInRoom") var firstInRoom = true
+    @AppStorage("rank") var rank = -1
     @State var deckView : [CardView] = []
     @State var isMoving : Bool = false
     @State var opacityValue : Double = 1
@@ -24,6 +25,7 @@ struct GameView: View {
         _isInRoom = isInRoom
     }
     func reset(){
+        print("game view reset")
         viewModel.reset()
     }
     var body: some View {
@@ -46,13 +48,18 @@ struct GameView: View {
                                 }
                                 if let room = viewModel.room, let player = viewModel.player, let rank = viewModel.yourRank{
                                     Button("Exit Room"){
-                                        roomID = "null"
-                                        isInRoom = false
-                                    
-                                        let playerCopy = Player(playerID: player.playerID) // 创建一个 player 对象的副本
-                                        playerCopy.roomID = player.roomID // 复制其他需要保留的属性
 
-                                        quitRoom(player: playerCopy)
+                                        updatePlayerGameResult(playerID: room.players, result: room.gameResult, startTime: room.startTime) {
+                                            let playerCopy = Player(playerID: player.playerID, roomID: player.roomID) // 创建一个 player 对象的副本
+//                                            playerCopy.roomID = player.roomID // 复制其他需要保留的属性
+                                            quitRoom(player: playerCopy)
+                                            closeRoom(roomID: viewModel.roomID)
+                                            viewModel.reset()
+                                            roomID = "null"
+                                            isInRoom = false
+                                        }
+                                        
+                                        
                                             
                                     }
                                     .disabled(rank != 0 ? true : false)
@@ -60,7 +67,7 @@ struct GameView: View {
                                 
                             }
                             .frame(width: geometry.size.width, height: geometry.size.height)
-                            .opacity((viewModel.player?.deck.count == 0 || viewModel.nextPlayerID == viewModel.playerID) ? 1 : 0)
+                            .opacity((viewModel.player?.deck.count == 0 || viewModel.nextPlayerID == viewModel.playerID ) ? 1 : 0)
                             .zIndex(3)
                             VStack {
                                 HStack{

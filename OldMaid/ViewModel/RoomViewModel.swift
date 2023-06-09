@@ -35,6 +35,7 @@ class RoomViewModel: ObservableObject {
             guard let snapshot = snapshot, snapshot.exists else {
                 // Room document doesn't exist or there was an error
                 self?.room = nil
+                self?.stopObservingRoom()
                 return
             }
 
@@ -52,6 +53,7 @@ class RoomViewModel: ObservableObject {
     }
 
     func stopObservingRoom() {
+        print("reset room observer")
         roomListener?.remove()
         roomListener = nil
     }

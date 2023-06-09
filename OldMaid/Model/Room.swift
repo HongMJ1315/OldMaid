@@ -332,7 +332,7 @@ func getRoomDeckID(roomID: String, completion: @escaping (String) -> Void) {
 
 func quitRoom(player : Player){
     let roomRef = db.collection("room").document(player.roomID)
-    
+    print("Call quit room \(player.roomID)")
     roomRef.getDocument { (snapshot, error) in
         guard let snapshot,
               snapshot.exists,
@@ -341,23 +341,8 @@ func quitRoom(player : Player){
         player.roomID = ""
         player.deckID = ""
         let playerRef = db.collection("player").document(player.playerID)
-        try? playerRef.setData(from: player)
-        if(room.hostPlayerID == player.playerID || room.players.count == 0){
-            if(room.isStart == true){
-                updatePlayerGameResult(playerID: room.players, result: room.gameResult, startTime: room.startTime){
-                }
-            }
-            else{
-                roomRef.delete()
-            }
-            return
-        }
-        
-        do {
-            try roomRef.setData(from: room)
-        } catch {
-            print(error)
-        }
+        playerRef.updateData(["roomID": ""])
+        playerRef.updateData(["deckID": ""])
     }
 }
 
@@ -441,22 +426,52 @@ func updateGameResult(roomID: String, playerID : String){
 }
 
 func updatePlayerGameResult(playerID: [String], result: [String], startTime: String, completion: @escaping () -> Void) {
+    let dispatchGroup = DispatchGroup()
+    
     for i in playerID {
+        print("now process \(i)")
         let playerRef = db.collection("player").document(i)
+        dispatchGroup.enter() // 进入dispatch group
+        
         playerRef.getDocument { (snapshot, error) in
             guard let snapshot,
                   snapshot.exists,
-                  var player = try? snapshot.data(as: Player.self) else { return }
+                  var player = try? snapshot.data(as: Player.self) else {
+                dispatchGroup.leave() // 离开dispatch group（出错情况）
+                return
+            }
             
+            print("update player game result \(i)")
             // 更新player的gameHistory字典
             player.gameHistory[startTime] = result
             
+            print(player.gameHistory)
             // 将更新后的player保存回数据库
-            try? playerRef.setData(from: player)
+            do{
+                try playerRef.setData(from: player)
+                dispatchGroup.leave() // 离开dispatch group（请求完成）
+            }catch{
+                print(error)
+                dispatchGroup.leave() // 离开dispatch group（请求完成）
+            
+            }
+            print("update finish \(i)")
         }
     }
     
-    completion()
+    dispatchGroup.notify(queue: .main) {
+        completion() // 所有任务完成后调用completion闭包
+    }
+}
+
+func closeRoom(roomID : String){
+    print("close room \(roomID)")
+    let roomRef = db.collection("room").document(roomID)
+    roomRef.getDocument { (snapshot, error) in
+        guard let snapshot, snapshot.exists,
+                var room = try? snapshot.data(as: Room.self) else {return}
+        roomRef.delete()
+    }
 }
 
 

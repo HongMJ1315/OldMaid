@@ -10,17 +10,12 @@ import FirebaseFirestoreSwift
 
 struct RoomView: View {
     @AppStorage("firstInRoom") var firstInRoom = true
-    @StateObject var viewModel: RoomViewModel = RoomViewModel(){
-        willSet {
-//            self.objectWillChange.send()
-            print("get room playerr number \(viewModel.room?.players.count)")
-        }
-    }
+    @StateObject var viewModel: RoomViewModel = RoomViewModel()
     @AppStorage("roomID") var roomID = "null"
     @Binding var isInRoom : Bool
     @Binding var player : Player
     @State var isStart : Bool = false
-    @State var gameView: GameView?
+        
     init(player : Binding<Player>, isInRoom: Binding<Bool>) {
         _isInRoom = isInRoom
         _player = player
@@ -76,6 +71,7 @@ struct RoomView: View {
                                     print("playerID: \(player.playerID) press exit button")
                                     
                                     quitRoom(player: player)
+                                    viewModel.stopObservingRoom()
                                 }
                                 Text("Game Started: \(room.isStart ? "true" : "false")")
                             }
@@ -84,8 +80,7 @@ struct RoomView: View {
                                     isInRoom = false
                                     roomID = "null"
                                     resetPlayer(player: player)
-                                    gameView!.reset()
-                                
+                                    viewModel.stopObservingRoom()
                                 }
                             
                             }
@@ -96,11 +91,10 @@ struct RoomView: View {
                 .opacity(geometry.size.width < geometry.size.height ? 0 : 1)
                 .zIndex(3)
                 .background{
-                    if let room = viewModel.room{
-                        NavigationLink(destination: gameView, isActive: room.isStart ? .constant(true) : .constant(false)) {
-                            EmptyView()
-                        }
+                    NavigationLink(destination: GameView(isInRoom: $isInRoom), isActive:( (viewModel.room?.isStart ?? false) ? .constant(true) : .constant(false))) {
+                        EmptyView()
                     }
+                    
                 }
             }
             
@@ -108,7 +102,6 @@ struct RoomView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear{
 //            self.firstInRoom = false
-            self.gameView = GameView(isInRoom: $isInRoom)
             print("run roomView onAppear")
             self.viewModel.setRoomID(roomID: roomID)
             checkRoomIlliberal(roomID: roomID) { result in
@@ -124,7 +117,6 @@ struct RoomView: View {
             checkRoomIsStart(roomID: roomID) { result in
                 isStart = result
             }
-            
             
         }
         

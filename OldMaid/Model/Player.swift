@@ -23,9 +23,11 @@ class Player: ObservableObject, Codable {
     }
     
     init(playerID : String) {
+        print("run player init only playerID \(playerID)")
         self.roomID = ""
         let playerRef = db.collection("player").document(playerID)
         self.playerID = playerID
+        
         playerRef.setData([
             "playerID": playerID,
             "roomID": roomID,
@@ -40,6 +42,7 @@ class Player: ObservableObject, Codable {
         setPlayerInfo(playerID: playerID, roomID: roomID)
     }
     func setPlayerInfo(playerID : String, roomID : String) {
+        print("set playerInfo \(playerID) \(roomID)")
         self.roomID = roomID
         let playerRef = db.collection("player").document(playerID)
         self.playerID = playerID
@@ -51,7 +54,6 @@ class Player: ObservableObject, Codable {
             if let player = try? document.data(as : Player.self){
                 self.deck = player.deck
                 self.deckID = player.deckID
-                self.gameHistory = player.gameHistory
             }
                
             
@@ -64,13 +66,9 @@ class Player: ObservableObject, Codable {
                 ]
                 cardsData.append(cardData)
             }
-            playerRef.setData([
-                "playerID": playerID,
-                "roomID": roomID,
-                "deckID": self.deckID,
-                "deck" : cardsData,
-                "gameHistory" : self.gameHistory
-            ])
+            playerRef.updateData(["playerID": playerID])
+            playerRef.updateData(["roomID": roomID])
+            playerRef.updateData(["deck": cardsData])
         }
     }
     
@@ -210,7 +208,7 @@ func abandonCardFromPlayer(formPlayer: Player, firstCardIndex: Int, secondCardIn
             ]
             abandonCardsData.append(cardData)
             do {
-                try roomRef.setData(from: room) { error in
+                try roomRef.updateData(["abandonCard": abandonCardsData]) { error in
                     if let error = error {
                         print(error)
                     }

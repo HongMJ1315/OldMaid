@@ -188,8 +188,11 @@ class GameViewModel : ObservableObject {
             print("Next player ID: ", player!.playerID, player!.deck.count, self.justForRemoveMagicBug)
             
             if(self.nextPlayerID == self.playerID){
-                print("Next player is me")
-                self.yourRank = 0
+                updateRank(roomID: self.roomID){ [self] rank in
+                    self.yourRank = 0
+                    updateGameResult(roomID: self.roomID, playerID: self.playerID)
+                    self.nextPlayerListener?.remove()
+                }
                 return
             }
             if(!self.justForRemoveMagicBug){
@@ -201,7 +204,7 @@ class GameViewModel : ObservableObject {
             }
             if (player!.deck.isEmpty){
                 print("Next player card empty")
-                sleep(3)
+                sleep(1)
                 self.nextPlayerListener?.remove()
                 self.justForRemoveMagicBug = false
                 
@@ -233,6 +236,7 @@ class GameViewModel : ObservableObject {
         self.roomListener = roomRef.addSnapshotListener { (documentSnapshot, error) in
             guard let document = documentSnapshot else{
                 print("no document")
+                self.reset()
                 return
             }
             self.room = try? document.data(as : Room.self)
