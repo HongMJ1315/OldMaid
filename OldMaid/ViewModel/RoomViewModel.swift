@@ -34,6 +34,7 @@ class RoomViewModel: ObservableObject {
         roomListener = roomRef.addSnapshotListener { [weak self] snapshot, error in
             guard let snapshot = snapshot, snapshot.exists else {
                 // Room document doesn't exist or there was an error
+                print("room error")
                 self?.room = nil
                 self?.stopObservingRoom()
                 return

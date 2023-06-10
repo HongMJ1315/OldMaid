@@ -151,6 +151,7 @@ func createRoom(player : Player) -> String{
     }catch{
         print(error)
     }
+    print("room create finish")
     return roomID
 }
 func joinRoom(player: Player, roomID: String, completion: @escaping () -> Void) {
@@ -170,6 +171,7 @@ func joinRoom(player: Player, roomID: String, completion: @escaping () -> Void) 
                 }
                 completion()
             }
+            print("room create finish")
         } catch {
             print(error)
             completion()
@@ -341,8 +343,12 @@ func quitRoom(player : Player){
         player.roomID = ""
         player.deckID = ""
         let playerRef = db.collection("player").document(player.playerID)
+        roomRef.updateData(["players": room.players])
         playerRef.updateData(["roomID": ""])
         playerRef.updateData(["deckID": ""])
+        if(player.playerID == room.hostPlayerID){
+            roomRef.delete()
+        }
     }
 }
 

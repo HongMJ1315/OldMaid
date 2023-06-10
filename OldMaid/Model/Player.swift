@@ -148,6 +148,7 @@ func dealCardFromPlayer(formPlayerID: String, toPlayer: Player, cardIndex: Int, 
             toPlayerRef.updateData([
                 "deck" : cardsData
             ])
+            print("deal finish")
             completion(true)
         } else {
             // Document doesn't exist or there was an error
@@ -227,5 +228,6 @@ func resetPlayer(player : Player){
     db.collection("player").document(player.playerID).updateData(["roomID": ""])
     db.collection("player").document(player.playerID).updateData(["deckID": ""])
     db.collection("player").document(player.playerID).updateData(["deck": [Card]()])
+    print("reset player finish")
 }
 

@@ -13,15 +13,18 @@ struct GameView: View {
     @AppStorage("roomID") var roomID = "null"
     @AppStorage("firstInRoom") var firstInRoom = true
     @AppStorage("rank") var rank = -1
-    @State var deckView : [CardView] = []
     @State var isMoving : Bool = false
     @State var opacityValue : Double = 1
     @State var tapCardIndex : Int = -1
     @State var secondTapCardIndex : Int = -1
     @State var chooseCard : Int = -1
     @State var dealFinish : Bool = false
+    @Binding var isInGame : Bool
     @Binding var isInRoom : Bool
-    init(isInRoom: Binding<Bool>) {
+    @State var phoneWidth : CGFloat = 0
+    @State var offsetXValues : [CGFloat] = Array(repeating: 0, count: 15)
+    init(isInGame: Binding<Bool>, isInRoom: Binding<Bool>) {
+        _isInGame = isInGame
         _isInRoom = isInRoom
     }
     func reset(){
@@ -31,44 +34,69 @@ struct GameView: View {
     var body: some View {
         NavigationView{
             GeometryReader{ geometry in
+                let cardSpacing : CGFloat = geometry.size.width / 15
+                let cardWidth : CGFloat = geometry.size.width / 10
+                let cardHeight : CGFloat = geometry.size.height / 5
                 ZStack{
                     VStack{
                         Text("Please Roatte Your Phone")
                     }
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .opacity(geometry.size.width < geometry.size.height ? 1 : 0)
-                    .zIndex(4)
+                    .zIndex(6)
                     
                     Group {
                         ZStack{
                             VStack{
-                                Text("Finish")
+                                Text("Game Result")
                                 if let rank = viewModel.yourRank{
-                                    Text("\(rank)")
+                                    Text("Your Rank \(rank)")
                                 }
-                                if let room = viewModel.room, let player = viewModel.player, let rank = viewModel.yourRank{
+                                if let room = viewModel.room, let player = viewModel.player {
+                                    if let gameResult = room.gameResult {
+                                        ForEach(gameResult, id: \.self) { result in
+                                            Text("\(result)")
+                                        }
+                                    }
                                     Button("Exit Room"){
-
-                                        updatePlayerGameResult(playerID: room.players, result: room.gameResult, startTime: room.startTime) {
-                                            let playerCopy = Player(playerID: player.playerID, roomID: player.roomID) // 创建一个 player 对象的副本
-//                                            playerCopy.roomID = player.roomID // 复制其他需要保留的属性
-                                            quitRoom(player: playerCopy)
-                                            closeRoom(roomID: viewModel.roomID)
+                                        if(room.hostPlayerID == playerID){
+                                            updatePlayerGameResult(playerID: room.players, result: room.gameResult, startTime: room.startTime) {
+                                                let playerCopy = Player(playerID: player.playerID, roomID: player.roomID) // 创建一个 player 对象的副本
+    //                                            playerCopy.roomID = player.roomID // 复制其他需要保留的属性
+                                                quitRoom(player: playerCopy)
+                                                closeRoom(roomID: viewModel.roomID)
+                                                viewModel.reset()
+                                                roomID = "null"
+                                                isInGame = false
+                                            }
+                                        }
+                                        else{
                                             viewModel.reset()
                                             roomID = "null"
+                                            isInGame = false
                                             isInRoom = false
                                         }
-                                        
-                                        
-                                            
                                     }
-                                    .disabled(rank != 0 ? true : false)
+                                    .disabled(room.rank >= 0)
                                 }
-                                
                             }
                             .frame(width: geometry.size.width, height: geometry.size.height)
-                            .opacity((viewModel.player?.deck.count == 0 || viewModel.nextPlayerID == viewModel.playerID ) ? 1 : 0)
-                            .zIndex(3)
+                            .opacity((viewModel.player?.deck.count == 0 || viewModel.nextPlayerID == viewModel.playerID ) && viewModel.roomError == false ? 1 : 0)
+                            .zIndex(5)
+                            VStack{
+                                Text("Room Error")
+                                Button("Exit Room"){
+                                    viewModel.reset()
+                                    roomID = "null"
+                                    isInGame = false
+                                    isInRoom = false
+                                }
+
+                            }
+                            .frame(width: geometry.size.width, height: geometry.size.height)
+                            .opacity((viewModel.roomError) ? 1 : 0)
+                            .zIndex(4)
+
                             VStack {
                                 HStack{
                                     if let deck = viewModel.player?.deck {
@@ -89,6 +117,7 @@ struct GameView: View {
                                                         if(chooseCard == index && viewModel.isChoosed!){
                                                             print("chooseCard == index")
                                                             dealCardFromPlayer(formPlayerID: viewModel.nextPlayerID, toPlayer: viewModel.player!, cardIndex: chooseCard){ result in
+                                                                calculateOffsetXValues()
                                                                 self.dealFinish = result
                                                                 
                                                             }
@@ -106,17 +135,31 @@ struct GameView: View {
                                 }
                                 HStack{
                                     Button("Shuffle") {
-                                        isMoving = true
+//                                        isMoving = true
                                         withAnimation(.easeInOut(duration: 0.5)) {
                                             opacityValue = 0
                                         }
-                                        
+                                        withAnimation(.easeInOut(duration: 0.5))  {
+                                            for i in 0..<offsetXValues.count{
+                                                offsetXValues[i] = 0
+                                            }
+                                        }
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                             viewModel.shuffle()
                                             withAnimation(.easeInOut(duration: 0.5)) {
                                                 opacityValue = 1
                                             }
-                                            isMoving = false
+                                            withAnimation(.easeInOut(duration: 0.5)) {
+                                                guard let deck = viewModel.player?.deck else {
+                                                    return
+                                                }
+                                                let cardSpacing: CGFloat = 50
+                                                let xOffset = -CGFloat(deck.count - 1) * cardSpacing / 2
+                                                offsetXValues = deck.indices.map { index in
+                                                    return xOffset + CGFloat(index) * cardSpacing
+                                                }
+                                            }
+//                                            isMoving = false
                                         }
                                     }
                                     Button("Next"){
@@ -127,46 +170,57 @@ struct GameView: View {
                                     Text("Your Turn")
                                         .opacity((dealFinish == true || viewModel.isChoosed ?? false) ? 1 : 0)
                                 }
-                                
-                                HStack {
+                                ZStack {
                                     if let deck = viewModel.player?.deck {
-                                        ForEach(deck) { card in
-                                            CardView(card: card)
-                                                .rotationEffect(isMoving ? .degrees(360) : .zero)
-                                                .opacity(opacityValue)
-                                                .animation(.easeInOut(duration: 1))
-                                                .onTapGesture {
-                                                    if tapCardIndex != -1 && deck[tapCardIndex].rank == card.rank && tapCardIndex != deck.firstIndex(where: { $0.id == card.id }) {
-                                                        secondTapCardIndex = deck.firstIndex(where: { $0.id == card.id })!
-                                                        print("secondTapCardIndex: ", secondTapCardIndex)
-                                                        abandonCardFromPlayer(formPlayer: viewModel.player!, firstCardIndex: tapCardIndex, secondCardIndex: secondTapCardIndex, roomID: roomID)
+                                        ForEach(Array(deck.enumerated()), id: \.element.id) { (index, card) in
+                                            if let card = card {
+                                                
+                                                CardView(card: card)
+                                                    .rotationEffect(isMoving ? .degrees(360) : .zero)
+                                                    .opacity(opacityValue)
+                                                    .animation(.easeInOut(duration: 1))
+                                                    .frame(width: cardWidth, height: cardHeight)
+                                                    .offset(x: offsetXValues[index])
+                                                    .zIndex(Double(index) + 10)
+                                                    .onTapGesture {
+                                                        if tapCardIndex != -1 && deck[tapCardIndex].rank == card.rank && tapCardIndex != deck.firstIndex(where: { $0.id == card.id }) {
+                                                            secondTapCardIndex = deck.firstIndex(where: { $0.id == card.id })!
+                                                            print("secondTapCardIndex: ", secondTapCardIndex)
+                                                            abandonCardFromPlayer(formPlayer: viewModel.player!, firstCardIndex: tapCardIndex, secondCardIndex: secondTapCardIndex, roomID: roomID)
+                                                            
+                                                            tapCardIndex = -1
+                                                            secondTapCardIndex = -1
+                                                            return
+                                                        }
+                                                        if let tapIndex = deck.firstIndex(where: { $0.id == card.id }) {
+                                                            print("index: ", tapIndex)
+                                                            tapCardIndex = tapIndex
+                                                        }
+                                                    }
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 10)
+                                                            .stroke(Color.blue, lineWidth: 2)
+                                                            .opacity(tapCardIndex == deck.firstIndex(where: { $0.id == card.id }) ? 1 : 0)
+                                                        //                                                        .frame(width: cardWidth, height: cardHeight)
+                                                            .offset(x: offsetXValues[index])
                                                         
-                                                        tapCardIndex = -1
-                                                        secondTapCardIndex = -1
-                                                        return
-                                                    }
-                                                    if let index = deck.firstIndex(where: { $0.id == card.id }) {
-                                                        print("index: ", index)
-                                                        tapCardIndex = index
-                                                    }
-                                                    
-                                                    
-                                                }
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 10)
-                                                        .stroke(Color.blue, lineWidth: 2)
-                                                        .opacity(tapCardIndex == deck.firstIndex(where: { $0.id == card.id }) ? 1 : 0)
-                                                )
-                                                .overlay{
-                                                    RoundedRectangle(cornerRadius: 10)
-                                                        .stroke(Color.red, lineWidth: 2)
-                                                        .opacity(tapCardIndex != -1 && tapCardIndex < deck.count && deck[tapCardIndex].rank == card.rank && tapCardIndex != deck.firstIndex(where: { $0.id == card.id }) ? 1 : 0)
-                                                }
+                                                    )
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 10)
+                                                            .stroke(Color.red, lineWidth: 2)
+                                                            .opacity(tapCardIndex != -1 && tapCardIndex < deck.count && deck[tapCardIndex].rank == card.rank && tapCardIndex != deck.firstIndex(where: { $0.id == card.id }) ? 1 : 0)
+                                                        //                                                        .frame(width: cardWidth, height: cardHeight)
+                                                            .offset(x: offsetXValues[index])
+                                                        
+                                                    )
+                                            }
                                         }
                                         Text("Finish")
                                             .opacity(viewModel.player?.deck.count == 0 ? 1 : 0)
                                     }
                                 }
+
+
                                 Text(viewModel.nextPlayerID)
 
                                 Text(viewModel.player?.playerID ?? "")
@@ -185,14 +239,38 @@ struct GameView: View {
             firstInRoom = true
             self.viewModel.setPlayerAndRoomID(romoveBug: !firstInRoom, playerID: playerID, roomID: roomID)
             firstInRoom = true
+            calculateOffsetXValues()
         }
         .onDisappear {
-            if !isInRoom{
+            if !isInGame{
                 // 在非活动状态下执行清理操作
                 self.viewModel.reset()
             
             
             }
         }
+        .onChange(of: viewModel.player?.deck) { _ in
+            print("deck change")
+            calculateOffsetXValues()
+            print(viewModel.player?.deck.count)
+        }
     }
+    func calculateOffsetXValues() {
+        print("calculateOffsetXValues")
+        
+        withAnimation {
+            guard let deck = viewModel.player?.deck else {
+                return
+            }
+            let cardSpacing: CGFloat = 50
+            let xOffset = -CGFloat(deck.count - 1) * cardSpacing / 2
+            for i in deck.indices{
+                offsetXValues[i] = xOffset + CGFloat(i) * cardSpacing
+            }
+
+            print(offsetXValues)
+        }
+        
+    }
+
 }

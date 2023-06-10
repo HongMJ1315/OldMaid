@@ -19,6 +19,8 @@ class GameViewModel : ObservableObject {
     @Published var nowTurn : Int?
     @Published var isChoosed : Bool?
     @Published var yourRank : Int?
+    @Published var gameEnd : Bool = false
+    @Published var roomError : Bool = false
     private var isObservingNextPlayer: Bool = false
     var justForRemoveMagicBug : Bool = false
     var nextPlayerListener: ListenerRegistration?
@@ -166,6 +168,7 @@ class GameViewModel : ObservableObject {
             
             guard let document = documentSnapshot, document.exists else {
                 print("No document")
+                self.reset()
                 return
             }
             
@@ -239,7 +242,14 @@ class GameViewModel : ObservableObject {
                 self.reset()
                 return
             }
-            self.room = try? document.data(as : Room.self)
+            do{
+                self.room = try document.data(as : Room.self)
+            } catch {
+                print(error)
+                self.reset()
+                self.roomError = true
+                return
+            }
             if(self.room?.turn == self.playerIndex){
                 self.isChoosed = true
             }

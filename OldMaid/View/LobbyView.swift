@@ -12,9 +12,13 @@ struct LobbyView: View {
     @AppStorage("playerID") var playerID = "null"
     @AppStorage("roomID") var roomID = "null"
     @AppStorage("firstInRoom") var firstInRoom = true
-
+    @State private var roomNumber: String = ""
+    @State private var showJoinRoomAlert: Bool = false
+    @State private var showGameHistory: Bool = false
     @State var player : Player = Player()
     @State var isInRoom : Bool = false
+    @State private var playerResult: [String: [String]] = [:]
+
     @Binding var isLogIn : Bool
     init(isLogIn : Binding<Bool>){
         _isLogIn = isLogIn
@@ -45,20 +49,37 @@ struct LobbyView: View {
                                 }
                                 
                             }
-                            Button("Joint room for room number"){
-                                firstInRoom = true
-                                joinRoomRandom(player: player){ result in
-                                    isInRoom = true
-                                }
+                            Button("Join room by room number") {
+                                showJoinRoomAlert = true
                             }
+                            .sheet(isPresented: $showJoinRoomAlert, content: {
+                                joinRoomDialog()
+                            })
                             Button("Create Room"){
                                 resetPlayer(player: player)
                                 joinRoom(player:player, roomID:createRoom(player:player)){
                                     roomID = player.roomID
                                     isInRoom = true
+                                    print("is in room true")
                                 }
                                 
                             }
+                            Button("Show Game History") {
+                                getPlayerResult(playerID: playerID) { history in
+                                    self.playerResult = history
+                                    
+                                    for key in self.playerResult.keys.sorted() {
+                                        print(key)
+                                        for value in self.playerResult[key]! {
+                                            print(value)
+                                        }
+                                    }
+                                    showGameHistory = true
+                                }
+                            }
+                            .sheet(isPresented: $showGameHistory, content: {
+                                gameHistory()
+                            })
                             Button("Log Out"){
                                 playerID = "null"
                                 isLogIn = false
@@ -95,7 +116,97 @@ struct LobbyView: View {
                 player.deckID = ""
                 isInRoom = false
             }
+            getPlayerResult(playerID: playerID) { history in
+                self.playerResult = history
+                
+                for key in self.playerResult.keys.sorted() {
+                    print(key)
+                    for value in self.playerResult[key]! {
+                        print(value)
+                    }
+                }
+            }
         }
+        
+    }
+    @ViewBuilder
+    func joinRoomDialog() -> some View {
+        VStack {
+            Text("Enter room number")
+                .font(.title)
+
+            TextField("Room Number", text: $roomNumber)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+
+            HStack {
+                Spacer()
+
+                Button("Cancel") {
+                    showJoinRoomAlert = false
+                }
+                .padding()
+
+                Button("Join") {
+                    // 执行加入房间逻辑，使用roomNumber变量
+                    firstInRoom = true
+                    print(playerID, player.roomID)
+                    resetPlayer(player: player)
+                    joinRoomWithRoomNumber(player: player, roomNumber: roomNumber) { result in
+                        roomID = player.roomID
+                        isInRoom = result
+                        
+                    }
+                    print("Joining room: \(roomNumber)")
+                    showJoinRoomAlert = false
+                }
+                .padding()
+                .disabled(roomNumber.isEmpty)
+            }
+        }
+    }
+    @ViewBuilder
+    func gameHistory() -> some View {
+        NavigationView { // 或者使用 ScrollView 包装
+            VStack {
+                VStack{
+
+                    Button("Check"){
+                        print(playerResult)
+                    }
+                    ForEach(playerResult.keys.sorted(), id: \.self) { key in
+                        Text(key)
+                        let values = playerResult[key]!
+                        ForEach(values, id: \.self) { value in
+                            Text(value)
+                        }
+                    
+                    }
+                    
+                }
+                Button("Close"){
+                    showGameHistory = false
+                }
+                
+            }
+        }
+    }
+
+}
+
+func getPlayerResult(playerID : String, completion: @escaping ([String: [String]]) -> Void) {
+    print("get History \(playerID)")
+    var result : [String: [String]] = [String: [String]] ()
+    let db = Firestore.firestore()
+    let docRef = db.collection("player").document(playerID)
+    docRef.getDocument { (document, error) in
+        guard let document = document, document.exists else {
+            print("Document does not exist")
+            return
+        }
+        var player = try! document.data(as: Player.self)
+        result = player.gameHistory
+        completion(player.gameHistory)
     }
 }
 

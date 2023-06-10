@@ -14,7 +14,7 @@ struct RoomView: View {
     @AppStorage("roomID") var roomID = "null"
     @Binding var isInRoom : Bool
     @Binding var player : Player
-    @State var isStart : Bool = false
+    @State var isInGame : Bool = false
         
     init(player : Binding<Player>, isInRoom: Binding<Bool>) {
         _isInRoom = isInRoom
@@ -65,15 +65,17 @@ struct RoomView: View {
                                 
                                 
                                 Button("Exit"){
+                                    quitRoom(player: player)
+                                    viewModel.stopObservingRoom()
                                     isInRoom = false
                                     
                                     roomID = "null"
                                     print("playerID: \(player.playerID) press exit button")
                                     
-                                    quitRoom(player: player)
-                                    viewModel.stopObservingRoom()
+
                                 }
                                 Text("Game Started: \(room.isStart ? "true" : "false")")
+                                Text("Room Number \(room.roomNumber)")
                             }
                             else {
                                 Button("Room is not exist"){
@@ -91,7 +93,7 @@ struct RoomView: View {
                 .opacity(geometry.size.width < geometry.size.height ? 0 : 1)
                 .zIndex(3)
                 .background{
-                    NavigationLink(destination: GameView(isInRoom: $isInRoom), isActive:( (viewModel.room?.isStart ?? false) ? .constant(true) : .constant(false))) {
+                    NavigationLink(destination: GameView(isInGame: $isInGame, isInRoom: $isInRoom), isActive:($isInGame)) {
                         EmptyView()
                     }
                     
@@ -105,6 +107,7 @@ struct RoomView: View {
             print("run roomView onAppear")
             self.viewModel.setRoomID(roomID: roomID)
             checkRoomIlliberal(roomID: roomID) { result in
+                print("check room illiberal \(result)")
                 isInRoom = result
                 if(result == false){
                     isInRoom = false
@@ -115,9 +118,21 @@ struct RoomView: View {
                 }
             }
             checkRoomIsStart(roomID: roomID) { result in
-                isStart = result
+                isInGame = result
             }
             
+        }
+        .onChange(of: viewModel.room?.isStart) { isStart in
+            print("isStart is \(isStart)")
+            if let roomIsStart = isStart {
+                isInGame = roomIsStart
+            }
+        }
+        .onChange(of: isInRoom) { newValue in
+            print("isInRoom is \(newValue)")
+            if !newValue {
+                viewModel.stopObservingRoom()
+            }
         }
         
     }

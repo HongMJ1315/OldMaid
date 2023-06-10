@@ -87,6 +87,8 @@ extension Card.Rank: CustomStringConvertible {
             return "🃏"
         case .unknowMark:
             return "?"
+        case .ten:
+            return "X"
         default:
             return "\(rawValue)"
         }
