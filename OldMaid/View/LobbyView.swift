@@ -78,7 +78,9 @@ struct LobbyView: View {
                                 }
                             }
                             .sheet(isPresented: $showGameHistory, content: {
-                                gameHistory()
+//                                gameHistory()
+                                GameHistoryView(showGameHistory: $showGameHistory)
+                            
                             })
                             Button("Log Out"){
                                 playerID = "null"
@@ -165,33 +167,7 @@ struct LobbyView: View {
             }
         }
     }
-    @ViewBuilder
-    func gameHistory() -> some View {
-        NavigationView { // 或者使用 ScrollView 包装
-            VStack {
-                VStack{
 
-                    Button("Check"){
-                        print(playerResult)
-                    }
-                    Text("\(playerResult.keys.count)")
-                    ForEach(playerResult.keys.sorted(), id: \.self) { key in
-                        Text(key)
-                        let values = playerResult[key]!
-                        ForEach(values, id: \.self) { value in
-                            Text(value)
-                        }
-                    
-                    }
-                    
-                }
-                Button("Close"){
-                    showGameHistory = false
-                }
-                
-            }
-        }
-    }
 
 }
 
@@ -212,3 +188,43 @@ func getPlayerResult(playerID : String, completion: @escaping ([String: [String]
 }
 
 
+struct GameHistoryView: View{
+    @State var playerResult: [String: [String]] = [:]
+    @Binding var showGameHistory: Bool
+    @AppStorage("playerID") var playerID = "null"
+    
+    var body: some View{
+        ScrollView { // 或者使用 ScrollView 包装
+            VStack {
+                VStack{
+                    ForEach(playerResult.keys.sorted(), id: \.self) { key in
+                        Text("Play time: \(key)")
+                        let values = playerResult[key]!
+                        ForEach(0..<values.count) { i in
+                            Text("Rank \(i): \(values[i])")
+                        }
+                    
+                    }
+                    
+                }
+                Button("Close"){
+                    showGameHistory = false
+                }
+                
+            }
+        }
+        .onAppear{
+            getPlayerResult(playerID: playerID) { history in
+                self.playerResult = history
+                
+                for key in self.playerResult.keys.sorted() {
+                    print(key)
+                    for value in self.playerResult[key]! {
+                        print(value)
+                    }
+                }
+                showGameHistory = true
+            }
+        }
+    }
+}
