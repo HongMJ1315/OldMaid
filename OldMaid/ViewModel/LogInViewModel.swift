@@ -19,7 +19,7 @@ class LogInViewModel: ObservableObject{
                 return
             }
             print(userData.uid)
-            self.user = Player(playerID: userData.uid)
+            self.user = Player(playerID: userData.uid, roomID: "null")
         }
     }
     
