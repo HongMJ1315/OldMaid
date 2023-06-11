@@ -55,24 +55,16 @@ struct RoomView: View {
                                                 viewModel.start()
                                                 
                                             }
-                                            
                                         }
-                                    
                                     }
-  
                                 }
                                 .disabled(room.players.count < 4 || room.hostPlayerID != player.playerID)
-                                
-                                
                                 Button("Exit"){
                                     quitRoom(player: player)
                                     viewModel.stopObservingRoom()
                                     isInRoom = false
-                                    
                                     roomID = "null"
                                     print("playerID: \(player.playerID) press exit button")
-                                    
-
                                 }
                                 Text("Game Started: \(room.isStart ? "true" : "false")")
                                 Text("Room Number \(room.roomNumber)")
@@ -84,7 +76,6 @@ struct RoomView: View {
                                     resetPlayer(player: player)
                                     viewModel.stopObservingRoom()
                                 }
-                            
                             }
                         }
                     }
@@ -96,10 +87,8 @@ struct RoomView: View {
                     NavigationLink(destination: GameView(isInGame: $isInGame, isInRoom: $isInRoom), isActive:($isInGame)) {
                         EmptyView()
                     }
-                    
                 }
             }
-            
         }
         .navigationBarBackButtonHidden(true)
         .onAppear{
@@ -120,7 +109,6 @@ struct RoomView: View {
             checkRoomIsStart(roomID: roomID) { result in
                 isInGame = result
             }
-            
         }
         .onChange(of: viewModel.room?.isStart) { isStart in
             print("isStart is \(isStart)")
@@ -134,7 +122,6 @@ struct RoomView: View {
                 viewModel.stopObservingRoom()
             }
         }
-        
     }
 }
 

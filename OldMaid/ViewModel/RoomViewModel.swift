@@ -23,7 +23,6 @@ class RoomViewModel: ObservableObject {
     func setRoomID(roomID : String){
         self.roomID = roomID
         observeRoom()
-    
     }
     deinit {
         stopObservingRoom()
@@ -64,7 +63,6 @@ class RoomViewModel: ObservableObject {
             // Room data not available
             return false
         }
-
         return room.players.contains(playerID)
     }
     

@@ -42,12 +42,9 @@ struct LobbyView: View {
                                 print(playerID, player.roomID)
                                 resetPlayer(player: player)
                                 joinRoomRandom(player: player){ result in
-
                                     roomID = player.roomID
                                     isInRoom = result
-
                                 }
-                                
                             }
                             Button("Join room by room number") {
                                 showJoinRoomAlert = true
@@ -62,7 +59,6 @@ struct LobbyView: View {
                                     isInRoom = true
                                     print("is in room true")
                                 }
-                                
                             }
                             Button("Show Game History") {
                                 getPlayerResult(playerID: playerID) { history in
@@ -78,9 +74,7 @@ struct LobbyView: View {
                                 }
                             }
                             .sheet(isPresented: $showGameHistory, content: {
-//                                gameHistory()
                                 GameHistoryView(showGameHistory: $showGameHistory)
-                            
                             })
                             Button("Log Out"){
                                 playerID = "null"
@@ -98,9 +92,7 @@ struct LobbyView: View {
                     .opacity(geometry.size.width < geometry.size.height ? 0 : 1)
                     .zIndex(3)
                     .background(
-                        
                         NavigationLink(destination: RoomView(player : $player, isInRoom : $isInRoom), isActive: $isInRoom) { EmptyView() }
-                        
                     )
                 }
             }
@@ -129,26 +121,21 @@ struct LobbyView: View {
                 }
             }
         }
-        
     }
     @ViewBuilder
     func joinRoomDialog() -> some View {
         VStack {
             Text("Enter room number")
                 .font(.title)
-
             TextField("Room Number", text: $roomNumber)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
-
             HStack {
                 Spacer()
-
                 Button("Cancel") {
                     showJoinRoomAlert = false
                 }
                 .padding()
-
                 Button("Join") {
                     // 执行加入房间逻辑，使用roomNumber变量
                     firstInRoom = true
@@ -157,7 +144,6 @@ struct LobbyView: View {
                     joinRoomWithRoomNumber(player: player, roomNumber: roomNumber) { result in
                         roomID = player.roomID
                         isInRoom = result
-                        
                     }
                     print("Joining room: \(roomNumber)")
                     showJoinRoomAlert = false
@@ -167,8 +153,6 @@ struct LobbyView: View {
             }
         }
     }
-
-
 }
 
 func getPlayerResult(playerID : String, completion: @escaping ([String: [String]]) -> Void) {
@@ -192,7 +176,6 @@ struct GameHistoryView: View{
     @State var playerResult: [String: [String]] = [:]
     @Binding var showGameHistory: Bool
     @AppStorage("playerID") var playerID = "null"
-    
     var body: some View{
         ScrollView { // 或者使用 ScrollView 包装
             VStack {
@@ -203,14 +186,11 @@ struct GameHistoryView: View{
                         ForEach(0..<values.count) { i in
                             Text("Rank \(i): \(values[i])")
                         }
-                    
                     }
-                    
                 }
                 Button("Close"){
                     showGameHistory = false
                 }
-                
             }
         }
         .onAppear{

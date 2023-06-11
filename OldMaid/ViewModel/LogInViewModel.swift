@@ -25,7 +25,6 @@ class LogInViewModel: ObservableObject{
     
     func signUp(email: String, password: String,completion: @escaping (Bool)->Void){
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
-                    
             guard let userData = result?.user,
                   error == nil else {
                 completion(false)
@@ -74,7 +73,6 @@ class LogInViewModel: ObservableObject{
                     print(error)
                 }
             }
-            
             completion(true)
         }
     }
@@ -97,14 +95,10 @@ class LogInViewModel: ObservableObject{
             completion(false)
         }
     }
-    
-    
 }
 
 struct logInUITest : View{
     @ObservedObject var logInViewModel = LogInViewModel()
-    
-    
     @State var email = ""
     @State var password = ""
     var body: some View{
@@ -144,9 +138,7 @@ struct logInUITest : View{
 //                    
 //                    }
                 }
-            
             }
         }
     }
-
 }

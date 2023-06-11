@@ -70,8 +70,6 @@ struct Room: Codable, Identifiable {
         rank = try container.decode(Int.self, forKey: .rank)
         gameResult = try container.decode([String].self, forKey: .gameResult)
         startTime = try container.decode(String.self, forKey: .startTime)
-    
-    
     }
 
     func encode(to encoder: Encoder) throws {
@@ -99,7 +97,6 @@ func getRoomNumber() -> String {
         // 生成五位随机数字
         let randomNumber = String(format: "%05d", Int.random(in: 0..<100000))
         roomNumber = randomNumber
-        
         // 检查生成的房间号是否已存在
         isUnique = isRoomNumberUnique(roomNumber: roomNumber)
     }
@@ -109,17 +106,14 @@ func getRoomNumber() -> String {
 
 func isRoomNumberUnique(roomNumber: String) -> Bool {
     var isUnique = true
-    
     // 查询数据库以检查房间号是否已存在
     let query = db.collection("room").whereField("roomNumber", isEqualTo: roomNumber)
-    
     query.getDocuments { (snapshot, error) in
         if let error = error {
             print("Error fetching documents: \(error)")
             isUnique = false
             return
         }
-        
         if let documents = snapshot?.documents {
             if documents.isEmpty {
                 // 房间号不存在，唯一
@@ -135,7 +129,6 @@ func isRoomNumberUnique(roomNumber: String) -> Bool {
     while isUnique == nil {
         RunLoop.current.run(mode: .default, before: Date.distantFuture)
     }
-    
     return isUnique
 }
 
@@ -147,7 +140,6 @@ func createRoom(player : Player) -> String{
     let room = Room(deckID: deckID, roomID: roomID, roomNumber: roomNumber, players: [], hostPlayerID: player.playerID, isStart: false, turn: -1, rank: 0, gameResult: [], startTime: "")
     do{
         try roomRef.setData(from : room)
-
     }catch{
         print(error)
     }

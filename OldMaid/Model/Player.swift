@@ -55,9 +55,6 @@ class Player: ObservableObject, Codable {
                 self.deck = player.deck
                 self.deckID = player.deckID
             }
-               
-            
-            
             var cardsData: [[String: Int]] = []
             for i in self.deck{
                 let cardData: [String: Int] = [
@@ -78,11 +75,6 @@ class Player: ObservableObject, Codable {
         playerRef.updateData(["roomID": roomID])
     }
 
-    
-
-    
-    
-    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         playerID = try container.decode(String.self, forKey: .playerID)
@@ -100,9 +92,7 @@ class Player: ObservableObject, Codable {
         } else {
             deck = []
         }
-
         gameHistory = try container.decode([String: [String]].self, forKey: .gameHistory)
-    
     }
     
     func encode(to encoder: Encoder) throws {
@@ -172,6 +162,7 @@ func playerCardShuffle(player:Player){
     db.collection("player").document(player.playerID).updateData(["deck": cardsData])
    
 }
+
 func abandonCardFromPlayer(formPlayer: Player, firstCardIndex: Int, secondCardIndex: Int, roomID: String){
     let tmpCard = formPlayer.deck[firstCardIndex]
     let tmpCard2 = formPlayer.deck[secondCardIndex]
@@ -218,9 +209,7 @@ func abandonCardFromPlayer(formPlayer: Player, firstCardIndex: Int, secondCardIn
                 print(error)
             }
         }
-        
     }
-
 }
 
 func resetPlayer(player : Player){

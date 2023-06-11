@@ -68,7 +68,6 @@ struct Card: Comparable, Codable, Identifiable, Hashable {
         self.suit = suit
         self.rank = rank
     }
-    
 }
 
 

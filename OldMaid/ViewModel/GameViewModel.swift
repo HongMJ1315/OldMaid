@@ -88,7 +88,6 @@ class GameViewModel : ObservableObject {
                     }
                 }
                 completion(players[(playerIndex + 1) % players.count])
-//                self.nextPlayerID = players[(playerIndex + 1) % players.count]
             }
         }
     }
@@ -101,7 +100,6 @@ class GameViewModel : ObservableObject {
                 return
             }
             self.room = try? document.data(as : Room.self)
-            
             for i in self.room!.players.indices{
                 if(self.room!.players[i] == self.player!.playerID){
                     self.playerIndex = i
@@ -112,7 +110,6 @@ class GameViewModel : ObservableObject {
     }
     func observePlayer(){
         print("Observe player")
-        
         let cardRef = db.collection("player").document(playerID)
         self.playerListener = cardRef.addSnapshotListener { (documentSnapshot, error) in
             guard let document = documentSnapshot else{
@@ -129,14 +126,11 @@ class GameViewModel : ObservableObject {
                         print("no document")
                         return
                     }
-                    
                     let tmpRoom = try? document.data(as: Room.self)
-                    
                     for i in tmpRoom?.gameResult.indices ?? 0..<0 {
                         if tmpRoom?.gameResult[i] == self.playerID {
                             self.yourRank = (tmpRoom?.players.count)! - i - 1
                             print("Your rank: ", self.yourRank)
-                            
                             return
                         }
                     }
@@ -145,15 +139,11 @@ class GameViewModel : ObservableObject {
                         updateGameResult(roomID: self.roomID, playerID: self.playerID)
                         for i in tmpRoom?.players.indices ?? 0..<0{
                             if(tmpRoom?.players[i] == player?.playerID && i == tmpRoom?.turn){
-                                
                                 nextPlayer(roomID: self.roomID)
-                                
                             }
                         }
                     }
                 }
-                
-                
             }
         }
     }
@@ -165,15 +155,12 @@ class GameViewModel : ObservableObject {
             guard let self = self else {
                 return
             }
-            
             guard let document = documentSnapshot, document.exists else {
                 print("No document")
                 self.reset()
                 return
             }
-            
             print(documentSnapshot?.data())
-            
             var player : Player?
             do{
                 let tplayer = try document.data(as: Player.self)
@@ -183,13 +170,9 @@ class GameViewModel : ObservableObject {
                 print(error)
                 self.nextPlayerListener?.remove()
                 self.observeNextPlayer()
-                
                 return
             }
-            
-            
             print("Next player ID: ", player!.playerID, player!.deck.count, self.justForRemoveMagicBug)
-            
             if(self.nextPlayerID == self.playerID){
                 updateRank(roomID: self.roomID){ [self] rank in
                     self.yourRank = 0

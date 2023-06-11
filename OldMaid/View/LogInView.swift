@@ -23,17 +23,6 @@ struct LogInView: View {
                     .zIndex(4)
                     Group{
                         VStack{
-                            //                        Spacer()
-                            //                        HStack{
-                            //                            Spacer()
-                            //                            Image("OldMaid")
-                            //                                .resizable()
-                            //                                .scaledToFit()
-                            //                                .frame(width: 200, height: 200)
-                            //                                .padding()
-                            //                            Spacer()
-                            //                        }
-                            //                        Spacer()
                             NavigationView{
                                 VStack{
                                     HStack{
@@ -60,7 +49,6 @@ struct LogInView: View {
                                     Text(playerID)
                                 }
                             }
-                            //                        Spacer()
                         }
                         
                     }
@@ -99,7 +87,6 @@ struct SignUpView : View{
     @State var alertMessage = ""
     @Binding var isLogIn: Bool
     @AppStorage("playerID") var playerID = "null"
-
     
     @Environment(\.presentationMode) var presentationMode
     var body: some View{
@@ -107,12 +94,6 @@ struct SignUpView : View{
             HStack{
                 Spacer()
                 VStack{
-//                    Image("OldMaid")
-//                        .resizable()
-//                        .scaledToFit()
-//                        .frame(width: 200, height: 200)
-//                        .padding()
-//
                     VStack{
                         Spacer()
                         Text(playerID)
@@ -162,7 +143,6 @@ struct SignUpView : View{
                 }
                 Spacer()
             }
-            
         }
         .alert(isPresented: $showAlert){
             Alert(title: Text(alertMessage))
@@ -178,8 +158,6 @@ struct LogInFormView : View{
     @Binding var isLogIn: Bool
     @AppStorage("playerID") var playerID = "null"
     @AppStorage("roomID") var roomID = "null"
-
-    
     
     @Environment(\.presentationMode) var presentationMode
     var body: some View{
@@ -187,12 +165,6 @@ struct LogInFormView : View{
             HStack{
                 Spacer()
                 VStack{
-//
-//                    Image("OldMaid")
-//                        .resizable()
-//                        .scaledToFit()
-//                        .frame(width: 200, height: 200)
-//                        .padding()
                     VStack{
                         Spacer()
                         TextField("Email", text: $email)

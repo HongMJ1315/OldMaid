@@ -86,7 +86,6 @@ func saveDeck(deck: [Card], deckID: String) {
         ]
         cardsData.append(cardData)
     }
-    
     deckRef.setData([
         "cards": cardsData
     ])

@@ -159,7 +159,6 @@ struct GameView: View {
                                                     return xOffset + CGFloat(index) * cardSpacing
                                                 }
                                             }
-//                                            isMoving = false
                                         }
                                     }
                                     Button("Next"){
@@ -174,7 +173,6 @@ struct GameView: View {
                                     if let deck = viewModel.player?.deck {
                                         ForEach(Array(deck.enumerated()), id: \.element.id) { (index, card) in
                                             if let card = card {
-                                                
                                                 CardView(card: card)
                                                     .rotationEffect(isMoving ? .degrees(360) : .zero)
                                                     .opacity(opacityValue)
@@ -187,7 +185,6 @@ struct GameView: View {
                                                             secondTapCardIndex = deck.firstIndex(where: { $0.id == card.id })!
                                                             print("secondTapCardIndex: ", secondTapCardIndex)
                                                             abandonCardFromPlayer(formPlayer: viewModel.player!, firstCardIndex: tapCardIndex, secondCardIndex: secondTapCardIndex, roomID: roomID)
-                                                            
                                                             tapCardIndex = -1
                                                             secondTapCardIndex = -1
                                                             return
@@ -201,7 +198,6 @@ struct GameView: View {
                                                         RoundedRectangle(cornerRadius: 10)
                                                             .stroke(Color.blue, lineWidth: 2)
                                                             .opacity(tapCardIndex == deck.firstIndex(where: { $0.id == card.id }) ? 1 : 0)
-                                                        //                                                        .frame(width: cardWidth, height: cardHeight)
                                                             .offset(x: offsetXValues[index])
                                                         
                                                     )
@@ -209,9 +205,7 @@ struct GameView: View {
                                                         RoundedRectangle(cornerRadius: 10)
                                                             .stroke(Color.red, lineWidth: 2)
                                                             .opacity(tapCardIndex != -1 && tapCardIndex < deck.count && deck[tapCardIndex].rank == card.rank && tapCardIndex != deck.firstIndex(where: { $0.id == card.id }) ? 1 : 0)
-                                                        //                                                        .frame(width: cardWidth, height: cardHeight)
                                                             .offset(x: offsetXValues[index])
-                                                        
                                                     )
                                             }
                                         }
@@ -219,12 +213,8 @@ struct GameView: View {
                                             .opacity(viewModel.player?.deck.count == 0 ? 1 : 0)
                                     }
                                 }
-
-
                                 Text(viewModel.nextPlayerID)
-
                                 Text(viewModel.player?.playerID ?? "")
-
                             }
                             .frame(width: geometry.size.width, height: geometry.size.height)
                             .opacity((viewModel.player?.deck.count == 0 || viewModel.nextPlayerID == viewModel.playerID) ? 0 : 1)
@@ -245,8 +235,6 @@ struct GameView: View {
             if !isInGame{
                 // 在非活动状态下执行清理操作
                 self.viewModel.reset()
-            
-            
             }
         }
         .onChange(of: viewModel.player?.deck) { _ in
@@ -257,7 +245,6 @@ struct GameView: View {
     }
     func calculateOffsetXValues() {
         print("calculateOffsetXValues")
-        
         withAnimation {
             guard let deck = viewModel.player?.deck else {
                 return
@@ -267,10 +254,7 @@ struct GameView: View {
             for i in deck.indices{
                 offsetXValues[i] = xOffset + CGFloat(i) * cardSpacing
             }
-
             print(offsetXValues)
         }
-        
     }
-
 }
