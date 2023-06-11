@@ -174,6 +174,7 @@ struct LobbyView: View {
                     Button("Check"){
                         print(playerResult)
                     }
+                    Text("\(playerResult.keys.count)")
                     ForEach(playerResult.keys.sorted(), id: \.self) { key in
                         Text(key)
                         let values = playerResult[key]!

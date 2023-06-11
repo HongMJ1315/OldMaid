@@ -23,6 +23,7 @@
 		C62A9DDA2A20E8C500CE9206 /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C62A9DD92A20E8C500CE9206 /* FirebaseFirestoreSwift */; };
 		C62A9DDC2A20E8C500CE9206 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = C62A9DDB2A20E8C500CE9206 /* FirebaseStorage */; };
 		C62A9DDE2A20EA8F00CE9206 /* LobbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */; };
+		C63075942A35B9DE00B3F219 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C63075932A35B9DE00B3F219 /* GoogleService-Info.plist */; };
 		C6A2EE202A21DB6F00F02E04 /* RoomViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE1F2A21DB6F00F02E04 /* RoomViewModel.swift */; };
 		C6A2EE222A21E66F00F02E04 /* RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE212A21E66F00F02E04 /* RoomView.swift */; };
 		C6A2EE242A22601400F02E04 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A2EE232A22601400F02E04 /* GameViewModel.swift */; };
@@ -44,6 +45,7 @@
 		C62A9DC52A20E4CF00CE9206 /* CardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
 		C62A9DC62A20E4CF00CE9206 /* LogInView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInView.swift; sourceTree = "<group>"; };
 		C62A9DDD2A20EA8F00CE9206 /* LobbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LobbyView.swift; sourceTree = "<group>"; };
+		C63075932A35B9DE00B3F219 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C6A2EE1F2A21DB6F00F02E04 /* RoomViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomViewModel.swift; sourceTree = "<group>"; };
 		C6A2EE212A21E66F00F02E04 /* RoomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
 		C6A2EE232A22601400F02E04 /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				C62A9DAE2A20E49400CE9206 /* Assets.xcassets */,
+				C63075932A35B9DE00B3F219 /* GoogleService-Info.plist */,
 				C62A9DBF2A20E4CF00CE9206 /* Model */,
 				C62A9DBA2A20E4CF00CE9206 /* ViewModel */,
 				C62A9DC42A20E4CF00CE9206 /* View */,
@@ -211,6 +214,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C62A9DCC2A20E4CF00CE9206 /* Preview Assets.xcassets in Resources */,
+				C63075942A35B9DE00B3F219 /* GoogleService-Info.plist in Resources */,
 				C62A9DB22A20E49400CE9206 /* Preview Assets.xcassets in Resources */,
 				C62A9DAF2A20E49400CE9206 /* Assets.xcassets in Resources */,
 			);
